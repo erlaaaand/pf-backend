@@ -1,0 +1,111 @@
+// src/modules/shared/mail/mail.service.ts
+
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+
+@Injectable()
+export class MailService implements OnModuleInit {
+  private readonly logger = new Logger(MailService.name);
+
+  private readonly transporter: nodemailer.Transporter;
+
+  constructor(private readonly configService: ConfigService) {
+    // Tambahkan || '' atau nilai default untuk mencegah undefined
+    const host = this.configService.get<string>('EMAIL_HOST') || '';
+
+    // Berikan '587' sebagai string cadangan sebelum di-parse
+    const port = parseInt(
+      this.configService.get<string>('EMAIL_PORT') || '587',
+      10,
+    );
+
+    // Perbandingan === otomatis menghasilkan boolean murni
+    const secure = this.configService.get<string>('EMAIL_SECURE') === 'true';
+
+    const user = this.configService.get<string>('EMAIL_USER') || '';
+    const pass = this.configService.get<string>('EMAIL_PASS') || '';
+
+    this.logger.log(
+      `SMTP Config -> host=${host}, port=${port}, secure=${secure}, user=${user}`,
+    );
+
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: {
+        user,
+        pass,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    });
+  }
+
+  async onModuleInit(): Promise<void> {
+    try {
+      await this.transporter.verify();
+      this.logger.log('✅ SMTP connection berhasil.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.error(`SMTP Verify Error: ${err.message}`, err.stack);
+      } else {
+        this.logger.error('SMTP Verify Error', String(err));
+      }
+    }
+  }
+
+  async sendOtpEmail(to: string, name: string, otp: string): Promise<void> {
+    try {
+      const sender = this.configService.get<string>('EMAIL_USER');
+
+      await this.transporter.sendMail({
+        from: `"Physics Festival 2026" <${sender}>`,
+        to,
+        subject: 'Kode Verifikasi Physics Festival 2026',
+        html: `
+          <div style="font-family:Arial,sans-serif">
+            <h2>Halo ${name}</h2>
+
+            <p>Terima kasih telah mendaftar di Physics Festival 2026.</p>
+
+            <p>Gunakan kode OTP berikut:</p>
+
+            <h1 style="
+              letter-spacing:8px;
+              color:#2563eb;
+            ">
+              ${otp}
+            </h1>
+
+            <p>
+              OTP berlaku selama <b>10 menit</b>.
+            </p>
+
+            <p>
+              Jangan berikan kode ini kepada siapa pun.
+            </p>
+          </div>
+        `,
+      });
+
+      this.logger.log(`OTP berhasil dikirim ke ${to}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.error(
+          `Gagal mengirim email ke ${to}: ${err.message}`,
+          err.stack,
+        );
+      }
+
+      throw new InternalServerErrorException('Gagal mengirimkan email OTP.');
+    }
+  }
+}
