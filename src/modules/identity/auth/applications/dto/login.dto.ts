@@ -34,7 +34,7 @@ export class LoginDto {
   @Transform(({ value }: { value: unknown }): string => {
     if (typeof value !== 'string') return '';
 
-    return value.replaceAll('\0', '').trim().toLowerCase();
+    return value.replaceAll('\0', '').trim();
   })
   @IsString({ message: 'Password harus berupa string' })
   @IsNotEmpty({ message: 'Password wajib diisi' })
