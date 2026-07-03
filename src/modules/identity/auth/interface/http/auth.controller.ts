@@ -20,11 +20,13 @@ import {
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
   ApiConflictResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AuthOrchestrator } from '../../applications/orchestrator/auth.orchestrator';
 import { LoginDto } from '../../applications/dto/login.dto';
 import { RegisterDto } from '../../applications/dto/register.dto';
 import { AuthResponseDto } from '../../applications/dto/auth-response.dto';
+import { VerifyEmailDto } from '../../applications/dto/verify-email.dto';
 import { AuthExceptionFilter } from '../filters/auth-exception.filter';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Public } from '../decorators/public.decorator';
@@ -85,7 +87,9 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'Terlalu banyak percobaan. Coba lagi dalam 1 menit.',
   })
-  register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
+  register(
+    @Body() dto: RegisterDto,
+  ): Promise<{ message: string; userId: string }> {
     return this.orchestrator.register(dto);
   }
 
@@ -176,5 +180,38 @@ export class AuthController {
   })
   async logout(@CurrentUser() user: AuthenticatedUser) {
     return this.orchestrator.logout(user.sub);
+  }
+
+  @Public()
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @SkipThrottle()
+  @ApiOperation({
+    summary: 'Verifikasi email pengguna',
+    description:
+      'Memverifikasi email pengguna menggunakan kode OTP yang dikirimkan ke email.\n\n' +
+      '**Tidak memerlukan autentikasi.**',
+    operationId: 'authVerifyEmail',
+  })
+  @ApiOkResponse({
+    type: AuthResponseDto,
+    description:
+      'Verifikasi berhasil. Simpan `accessToken` untuk digunakan di request selanjutnya.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Validasi gagal — email tidak ditemukan, kode OTP salah, atau kode OTP sudah kadaluarsa.',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Kode OTP salah.',
+        error: 'BadRequestException',
+        module: 'auth',
+      },
+    },
+  })
+  @ApiBody({ type: VerifyEmailDto })
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<AuthResponseDto> {
+    return this.orchestrator.verifyEmail(dto.email, dto.otp);
   }
 }
