@@ -12,6 +12,7 @@ import {
   UseFilters,
   UseGuards,
   Header,
+  Post,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -23,6 +24,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { UserOrchestrator } from '../../applications/orchestrator/user.orchestrator';
 import { UpdateUserDto } from '../../applications/dto/update-user.dto';
@@ -30,14 +32,40 @@ import { UserResponseDto } from '../../applications/dto/user-response.dto';
 import { UserExceptionFilter } from '../filters/user-exception.filter';
 import { JwtAuthGuard } from '../../../auth/interface/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../auth/interface/decorators/current-user.decorator';
+import { RolesGuard } from '../../../auth/interface/guards/roles.guard';
+import {
+  AdminCreateUserDto,
+  UserRole,
+} from '../../applications/dto/admin-create-user.dto';
+import { Roles } from 'src/modules/identity/auth/interface/decorators/roles.decorator';
 
-@ApiTags('Users')
+@ApiTags('Identity - Users')
 @ApiBearerAuth('JWT')
 @Controller('users')
 @UseFilters(UserExceptionFilter)
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly orchestrator: UserOrchestrator) {}
+
+  @Post('admin/create')
+  @HttpCode(HttpStatus.CREATED)
+  @Roles(UserRole.ADMIN, UserRole.COMMITTEE) // HANYA ADMIN & PANITIA
+  @ApiOperation({
+    summary: '(ADMIN) Membuat akun user baru (Langsung Terverifikasi)',
+  })
+  @ApiCreatedResponse({
+    description: 'Akun berhasil dibuat dan otomatis terverifikasi',
+    schema: {
+      example: {
+        message: 'Akun berhasil dibuat dan langsung terverifikasi.',
+        userId: 'uuid-string',
+        email: 'peserta@gmail.com',
+      },
+    },
+  })
+  async createByAdmin(@Body() dto: AdminCreateUserDto) {
+    return this.orchestrator.adminCreateUser(dto);
+  }
 
   // ── GET /users/me ──────────────────────────────────────────────────────────
 

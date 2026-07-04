@@ -5,6 +5,8 @@ export interface IUserRepository {
   findById(id: string): Promise<UserEntity | null>;
   findByIdWithPassword(id: string): Promise<UserEntity | null>;
   findByEmail(email: string): Promise<UserEntity | null>;
+  findComitteByEmail(email: string): Promise<UserEntity | null>;
+  save(user: UserEntity): Promise<UserEntity>;
   findAll(): Promise<UserEntity[]>;
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, data: Partial<UserEntity>): Promise<UserEntity>;

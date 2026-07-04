@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../domains/entities/user.entity';
 import { IUserRepository } from './user.repository.interface';
+import { UserRole } from '../../../users/domains/entities/user.entity';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -57,5 +58,13 @@ export class UserRepository implements IUserRepository {
   async existsByEmail(email: string): Promise<boolean> {
     const count = await this.ormRepo.count({ where: { email } });
     return count > 0;
+  }
+
+  async save(user: UserEntity): Promise<UserEntity> {
+    return this.ormRepo.save(user);
+  }
+
+  async findComitteByEmail(email: string): Promise<UserEntity | null> {
+    return this.ormRepo.findOne({ where: { email, role: UserRole.COMMITTEE } });
   }
 }
