@@ -67,14 +67,14 @@ export class MailService implements OnModuleInit {
       const sender = this.configService.get<string>('EMAIL_USER');
 
       await this.transporter.sendMail({
-        from: `"Physics Festival 2026" <${sender}>`,
+        from: `"Physics Festival XXV" <${sender}>`,
         to,
-        subject: 'Kode Verifikasi Physics Festival 2026',
+        subject: 'Kode Verifikasi Physics Festival XXV',
         html: `
           <div style="font-family:Arial,sans-serif">
             <h2>Halo ${name}</h2>
 
-            <p>Terima kasih telah mendaftar di Physics Festival 2026.</p>
+            <p>Terima kasih telah mendaftar di Physics Festival XXV.</p>
 
             <p>Gunakan kode OTP berikut:</p>
 
