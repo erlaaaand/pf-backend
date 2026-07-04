@@ -3,7 +3,7 @@ import { CompetitionParticipantType } from '../../domains/entities/competition.e
 
 export class CompetitionWaveDto {
   @ApiProperty({ example: 'uuid-wave' })
-  id: string = '';
+  id: string | null = null;
 
   @ApiProperty({ example: 'Gelombang 1' })
   name: string = '';
@@ -20,7 +20,7 @@ export class CompetitionWaveDto {
 
 export class CompetitionResponseDto {
   @ApiProperty({ example: 'uuid-competition' })
-  id: string = '';
+  id: string | null = null;
 
   @ApiProperty({ example: 'Galaxy Research Odyssey (LKTI)' })
   name: string = '';
@@ -44,6 +44,13 @@ export class CompetitionResponseDto {
       'True jika lomba belum ditutup paksa DAN ada gelombang yang sedang berlangsung hari ini.',
   })
   isOpen: boolean = false;
+
+  @ApiProperty({
+    example: true,
+    description:
+      'Status aktif perlombaan. Jika false, lomba disembunyikan/soft-delete.',
+  })
+  isActive: boolean = false;
 
   @ApiPropertyOptional({ type: CompetitionWaveDto, nullable: true })
   activeWave: CompetitionWaveDto | null = null;

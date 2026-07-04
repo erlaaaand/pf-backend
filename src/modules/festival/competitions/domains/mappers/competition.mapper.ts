@@ -10,7 +10,7 @@ import {
 export class CompetitionMapper {
   toWaveDto(wave: CompetitionWaveEntity): CompetitionWaveDto {
     return {
-      id: wave.id,
+      id: wave.id ?? null,
       name: wave.name,
       price: Number(wave.price),
       startDate: wave.startDate,
@@ -34,12 +34,13 @@ export class CompetitionMapper {
     const isOpen = entity.isActive && activeWaveEntity !== undefined;
 
     return {
-      id: entity.id,
+      id: entity.id ?? null,
       name: entity.name,
       participantType: entity.participantType,
       minTeamMembers: entity.minTeamMembers,
       maxTeamMembers: entity.maxTeamMembers,
       description: entity.description,
+      isActive: entity.isActive,
       isOpen,
       activeWave: activeWaveEntity ? this.toWaveDto(activeWaveEntity) : null,
       waves: sortedWaves.map((w) => this.toWaveDto(w)),

@@ -9,7 +9,7 @@ export enum CompetitionParticipantType {
 @Entity({ name: 'competitions' })
 export class CompetitionEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string = '';
+  id?: string;
 
   @Column({ type: 'varchar', length: 150, nullable: false })
   name: string = '';

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CompetitionEntity } from '../../domains/entities/competition.entity';
-import { ICompetitionRepository } from './competition.repository.interface';
+import { type ICompetitionRepository } from './competition.repository.interface';
 
 @Injectable()
 export class CompetitionRepository implements ICompetitionRepository {
@@ -13,10 +13,13 @@ export class CompetitionRepository implements ICompetitionRepository {
 
   async findAll(): Promise<CompetitionEntity[]> {
     return this.ormRepo.find({
+      where: {
+        isActive: true,
+      },
       relations: {
         waves: true,
       },
-      order: { name: 'ASC' }, // Urutkan berdasarkan abjad
+      order: { name: 'ASC' },
     });
   }
 
@@ -27,5 +30,9 @@ export class CompetitionRepository implements ICompetitionRepository {
         waves: true,
       },
     });
+  }
+
+  async save(competition: CompetitionEntity): Promise<CompetitionEntity> {
+    return this.ormRepo.save(competition);
   }
 }

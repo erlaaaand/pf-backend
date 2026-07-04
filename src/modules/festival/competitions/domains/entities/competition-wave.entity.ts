@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -8,12 +9,15 @@ import {
 import { CompetitionEntity } from './competition.entity';
 
 @Entity({ name: 'competition_waves' })
+@Index('uq_competition_waves_competition_name', ['competitionId', 'name'], {
+  unique: true,
+})
 export class CompetitionWaveEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string = '';
+  id?: string;
 
   @Column({ type: 'varchar', length: 36, nullable: false })
-  competitionId: string = '';
+  competitionId?: string;
 
   @Column({ type: 'varchar', length: 50, nullable: false })
   name: string = ''; // "Gelombang 1", "Gelombang 2"
