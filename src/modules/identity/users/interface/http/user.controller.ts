@@ -49,7 +49,7 @@ export class UserController {
 
   @Post('admin/create')
   @HttpCode(HttpStatus.CREATED)
-  @Roles(UserRole.ADMIN, UserRole.COMMITTEE) // HANYA ADMIN & PANITIA
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: '(ADMIN) Membuat akun user baru (Langsung Terverifikasi)',
   })
