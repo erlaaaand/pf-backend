@@ -13,8 +13,7 @@ dns.setDefaultResultOrder('ipv4first');
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
 
-  // Inisialisasi aplikasi NestJS
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Ambil ConfigService untuk membaca .env
   const configService = app.get(ConfigService);
