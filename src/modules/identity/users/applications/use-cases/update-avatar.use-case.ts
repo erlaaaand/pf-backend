@@ -27,11 +27,6 @@ export class UpdateAvatarUseCase {
 
     const updated = await this.userRepo.update(userId, { avatarUrl });
 
-    // Module Users sengaja TIDAK digantungkan langsung ke StorageModule
-    // untuk menghindari circular dependency (AuthModule → UserModule,
-    // StorageModule → AuthModule). Housekeeping file avatar LAMA
-    // (menghapus dari disk/S3) dilakukan lewat listener terpisah yang bisa
-    // didaftarkan di StorageModule, mendengarkan event ini.
     if (previousAvatarUrl && previousAvatarUrl !== avatarUrl) {
       this.eventEmitter.emit('user.avatar_updated', {
         userId,

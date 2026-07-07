@@ -1,7 +1,7 @@
 // src/main.ts
 import dns from 'node:dns';
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
@@ -17,31 +17,31 @@ async function bootstrap(): Promise<void> {
 
   // Ambil ConfigService untuk membaca .env
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT', 3000);
+  const port = configService.get<number>('PORT', 3001);
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  const allowedOrigins = configService.get<string>('ALLOWED_ORIGINS', '');
 
   // 1. Setup Keamanan (Helmet)
   app.use(helmet());
 
-  // 2. Setup CORS
-  const originsArray = allowedOrigins
-    .split(',')
-    .map((origin: string) => origin.trim())
-    .filter((origin: string) => origin.length > 0);
-
   app.enableCors({
-    origin: originsArray.length > 0 ? originsArray : '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+
+    // (Opsional) Tentukan header apa saja yang boleh dikirim oleh frontend
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   // 3. Setup Global Prefix & Versioning
-  app.setGlobalPrefix('api');
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
+  app.setGlobalPrefix('api/v1');
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // 4. Setup Global Validation Pipe (Sangat Penting untuk DTO)
   app.useGlobalPipes(
