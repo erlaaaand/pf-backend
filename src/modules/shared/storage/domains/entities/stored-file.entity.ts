@@ -16,8 +16,6 @@ export type StorageProvider = 'local' | 's3';
 
 // Tambahan: Enum untuk membedakan fungsi file yang diunggah
 export enum FilePurpose {
-  PAYMENT_PROOF = 'PAYMENT_PROOF',
-  STUDENT_ID = 'STUDENT_ID',
   ORIGINALITY_STATEMENT = 'ORIGINALITY_STATEMENT',
   COMPETITION_WORK = 'COMPETITION_WORK',
   OTHER = 'OTHER',

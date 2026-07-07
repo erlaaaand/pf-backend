@@ -78,7 +78,7 @@ export class StorageController {
         purpose: {
           type: 'string',
           enum: Object.values(FilePurpose),
-          example: FilePurpose.PAYMENT_PROOF,
+          example: FilePurpose.OTHER,
           description: 'Tujuan file diunggah',
         },
         context: {
