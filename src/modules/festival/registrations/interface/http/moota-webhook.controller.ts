@@ -7,7 +7,10 @@ import {
   HttpStatus,
   ParseArrayPipe,
   UnauthorizedException,
+  Req,
+  type RawBodyRequest,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiHeader, ApiBody } from '@nestjs/swagger';
 import * as crypto from 'crypto';
 import { Public } from '../../../../identity/auth/interface/decorators/public.decorator';
@@ -33,6 +36,7 @@ export class MootaWebhookController {
   @ApiBody({ type: [MootaMutationDto] })
   async handleCallback(
     @Headers('signature') signature: string,
+    @Req() req: RawBodyRequest<Request>,
     @Body(new ParseArrayPipe({ items: MootaMutationDto }))
     payload: MootaMutationDto[],
   ) {
@@ -49,14 +53,26 @@ export class MootaWebhookController {
     if (!signature) {
       throw new UnauthorizedException('Header signature tidak ditemukan.');
     }
+    const rawBody = req.rawBody;
+    if (!rawBody) {
+      throw new UnauthorizedException(
+        'Raw body tidak tersedia untuk verifikasi signature.',
+      );
+    }
 
-    const payloadString = JSON.stringify(payload);
     const expectedSignature = crypto
       .createHmac('sha256', MOOTA_SECRET)
-      .update(payloadString)
+      .update(rawBody)
       .digest('hex');
 
-    if (signature !== expectedSignature) {
+    const signatureBuffer = Buffer.from(signature, 'utf8');
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+
+    const isValidSignature =
+      signatureBuffer.length === expectedBuffer.length &&
+      crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
+
+    if (!isValidSignature) {
       throw new UnauthorizedException('Signature tidak valid.');
     }
 
