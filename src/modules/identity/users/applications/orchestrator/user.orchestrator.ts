@@ -6,6 +6,7 @@ import { CreateUserUseCase } from '../use-cases/create-user.use-case';
 import { FindUserByIdUseCase } from '../use-cases/find-user-by-id.use-case';
 import { FindUserByEmailUseCase } from '../use-cases/find-user-by-email.use-case';
 import { UpdateUserUseCase } from '../use-cases/update-user.use-case';
+import { UpdateAvatarUseCase } from '../use-cases/update-avatar.use-case';
 import { AdminCreateUserUseCase } from '../use-cases/admin-create-comitte-user.use-case';
 import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 
@@ -16,6 +17,7 @@ export class UserOrchestrator {
     private readonly findById: FindUserByIdUseCase,
     private readonly findByEmail: FindUserByEmailUseCase,
     private readonly updateUser: UpdateUserUseCase,
+    private readonly updateAvatarUc: UpdateAvatarUseCase,
     private readonly adminCreateUserUc: AdminCreateUserUseCase,
   ) {}
 
@@ -33,6 +35,10 @@ export class UserOrchestrator {
     requestingUserId: string,
   ): Promise<UserResponseDto> {
     return this.updateUser.execute(id, dto, requestingUserId);
+  }
+
+  updateAvatar(userId: string, avatarUrl: string): Promise<UserResponseDto> {
+    return this.updateAvatarUc.execute(userId, avatarUrl);
   }
 
   adminCreateUser(

@@ -19,6 +19,7 @@ import { CreateUserUseCase } from './applications/use-cases/create-user.use-case
 import { FindUserByIdUseCase } from './applications/use-cases/find-user-by-id.use-case';
 import { FindUserByEmailUseCase } from './applications/use-cases/find-user-by-email.use-case';
 import { UpdateUserUseCase } from './applications/use-cases/update-user.use-case';
+import { UpdateAvatarUseCase } from './applications/use-cases/update-avatar.use-case';
 import { AdminCreateUserUseCase } from './applications/use-cases/admin-create-comitte-user.use-case';
 
 // Orchestrator
@@ -38,6 +39,7 @@ const USE_CASES = [
   FindUserByIdUseCase,
   FindUserByEmailUseCase,
   UpdateUserUseCase,
+  UpdateAvatarUseCase,
   AdminCreateUserUseCase,
 ];
 

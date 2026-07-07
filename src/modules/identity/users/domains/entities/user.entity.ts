@@ -40,6 +40,10 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 150, nullable: false })
   fullName: string = '';
 
+  // ── Foto Profil ──────────────────────────────────────────────
+  @Column({ type: 'varchar', length: 512, nullable: true })
+  avatarUrl: string | null = null;
+
   // ── Contact & Affiliation ────────
   @Column({ type: 'varchar', length: 20, nullable: false })
   phoneNumber: string = '';

@@ -28,6 +28,7 @@ import {
 } from '@nestjs/swagger';
 import { UserOrchestrator } from '../../applications/orchestrator/user.orchestrator';
 import { UpdateUserDto } from '../../applications/dto/update-user.dto';
+import { UpdateAvatarDto } from '../../applications/dto/update-avatar.dto';
 import { UserResponseDto } from '../../applications/dto/user-response.dto';
 import { UserExceptionFilter } from '../filters/user-exception.filter';
 import { JwtAuthGuard } from '../../../auth/interface/guards/jwt-auth.guard';
@@ -85,6 +86,34 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Token tidak ada atau tidak valid.' })
   getMe(@CurrentUser('sub') userId: string): Promise<UserResponseDto> {
     return this.orchestrator.getById(userId);
+  }
+
+  // ── PATCH /users/me/avatar ─────────────────────────────────────────────────
+
+  @Patch('me/avatar')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Perbarui foto profil',
+    description:
+      'Memperbarui foto profil user yang sedang login.\n\n' +
+      '**Alur pemakaian (2 langkah):**\n' +
+      '1. Upload file foto ke `POST /storage/upload` dengan `purpose: PROFILE_PHOTO`, ' +
+      'dapatkan `fileUrl` dari response-nya.\n' +
+      '2. Kirim `fileUrl` tersebut ke endpoint ini sebagai `avatarUrl`.\n\n' +
+      'Endpoint ini HANYA memperbarui referensi URL di profil — tidak menerima upload file secara langsung.',
+    operationId: 'usersUpdateAvatar',
+  })
+  @ApiOkResponse({
+    type: UserResponseDto,
+    description: 'Foto profil berhasil diperbarui.',
+  })
+  @ApiUnauthorizedResponse({ description: 'Token tidak ada atau tidak valid.' })
+  @ApiBadRequestResponse({ description: 'avatarUrl tidak valid / kosong.' })
+  async updateAvatar(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: UpdateAvatarDto,
+  ): Promise<UserResponseDto> {
+    return this.orchestrator.updateAvatar(userId, dto.avatarUrl);
   }
 
   // ── GET /users/:id ─────────────────────────────────────────────────────────
