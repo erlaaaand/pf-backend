@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CompetitionRegistrationEntity } from '../../domains/entities/registration.entity';
+import {
+  CompetitionRegistrationEntity,
+  RegistrationStatus,
+} from '../../domains/entities/registration.entity';
 import type { IRegistrationRepository } from './registration.repository.interface';
 
 @Injectable()
@@ -43,5 +46,42 @@ export class RegistrationRepository implements IRegistrationRepository {
       .orWhere('team.leaderId = :userId', { userId }) // Pendaftaran Tim (sebagai ketua)
       .orWhere('members.userId = :userId', { userId }) // Pendaftaran Tim (sebagai anggota)
       .getMany();
+  }
+
+  async findByBillingAmountAndStatus(
+    amount: number,
+    status: RegistrationStatus,
+  ): Promise<CompetitionRegistrationEntity | null> {
+    return this.repo.findOne({
+      where: { billingAmount: amount, status: status },
+    });
+  }
+
+  async checkDuplicate(
+    competitionId: string,
+    participantId: string,
+    isTeam: boolean,
+  ): Promise<boolean> {
+    const whereClause = isTeam
+      ? { competitionId: competitionId, teamId: participantId }
+      : { competitionId: competitionId, userId: participantId };
+
+    const existing = await this.repo.findOne({ where: whereClause });
+    return !!existing; // Mengembalikan true jika sudah ada data
+  }
+
+  async findByCompetitionIdAndStatus(
+    competitionId: string,
+    status: RegistrationStatus,
+  ): Promise<CompetitionRegistrationEntity[]> {
+    return this.repo.find({
+      where: { competitionId, status },
+      relations: {
+        competition: true,
+        wave: true,
+        team: true,
+        user: true,
+      },
+    });
   }
 }

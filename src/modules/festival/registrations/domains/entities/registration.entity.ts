@@ -22,6 +22,14 @@ export enum RegistrationStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum ChampionTitle {
+  NONE = 'NONE',
+  JUARA_1 = 'JUARA_1',
+  JUARA_2 = 'JUARA_2',
+  JUARA_3 = 'JUARA_3',
+  HONORABLE_MENTION = 'HONORABLE_MENTION',
+}
+
 @Entity({ name: 'competition_registrations' })
 // Index 1: Mencegah 1 user daftar lomba individu yang sama 2x
 @Index('uq_registration_competition_user', ['competitionId', 'userId'], {
@@ -34,9 +42,19 @@ export enum RegistrationStatus {
   where: '"teamId" IS NOT NULL', // Hanya berlaku jika teamId ada isinya
 })
 export class CompetitionRegistrationEntity {
-  // Jujur: ID diisi oleh database, awalnya null
   @PrimaryGeneratedColumn('uuid')
-  id: string | null = null;
+  id!: string;
+
+  // --- INTEGRASI MOOTA ---
+
+  @Column({ type: 'int', default: 0 })
+  uniqueCode: number = 0;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  billingAmount: number = 0;
+
+  @Column({ type: 'timestamp', nullable: true })
+  expiresAt: Date | null = null; // Total yang harus dibayar
 
   // ─── RELASI KE KOMPETISI ───
   @Column({ type: 'uuid' })
@@ -44,7 +62,7 @@ export class CompetitionRegistrationEntity {
 
   @ManyToOne(() => CompetitionEntity, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'competitionId' })
-  competition: CompetitionEntity | null = null;
+  competition?: CompetitionEntity;
 
   // ─── RELASI KE GELOMBANG (WAVE) ───
   @Column({ type: 'uuid', nullable: true })
@@ -55,7 +73,7 @@ export class CompetitionRegistrationEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'waveId' })
-  wave: CompetitionWaveEntity | null = null;
+  wave?: CompetitionWaveEntity;
 
   // ─── RELASI KE PESERTA (UNTUK LOMBA INDIVIDU) ───
   @Column({ type: 'uuid', nullable: true })
@@ -63,7 +81,7 @@ export class CompetitionRegistrationEntity {
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'userId' })
-  user: UserEntity | null = null;
+  user?: UserEntity;
 
   // ─── RELASI KE TIM (UNTUK LOMBA BERKELOMPOK) ───
   @Column({ type: 'uuid', nullable: true })
@@ -71,7 +89,7 @@ export class CompetitionRegistrationEntity {
 
   @ManyToOne(() => TeamEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'teamId' })
-  team: TeamEntity | null = null;
+  team?: TeamEntity;
 
   // ─── STATUS & TANGGAL ───
   @Column({
@@ -82,5 +100,12 @@ export class CompetitionRegistrationEntity {
   status: RegistrationStatus = RegistrationStatus.PENDING_PAYMENT;
 
   @CreateDateColumn()
-  registeredAt: Date | null = null;
+  registeredAt!: Date;
+
+  @Column({
+    type: 'enum',
+    enum: ChampionTitle,
+    default: ChampionTitle.NONE,
+  })
+  championTitle: ChampionTitle = ChampionTitle.NONE;
 }

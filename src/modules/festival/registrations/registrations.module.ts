@@ -4,14 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Entities
 import { CompetitionRegistrationEntity } from './domains/entities/registration.entity';
-import { PaymentEntity } from './domains/entities/payment.entity';
-import { PaymentAccountEntity } from './domains/entities/payment-account.entity';
 
 // Repositories
 import { RegistrationRepository } from './infrastructures/repositories/registration.repository';
 import { REGISTRATION_REPOSITORY_TOKEN } from './infrastructures/repositories/registration.repository.interface';
-import { PaymentRepository } from './infrastructures/repositories/payment.repository';
-import { PAYMENT_REPOSITORY_TOKEN } from './infrastructures/repositories/payment.repository.interface';
 
 // Domains & Mappers
 import { RegistrationMapper } from './domains/mappers/registration.mapper';
@@ -20,46 +16,41 @@ import { RegistrationDomainService } from './domains/services/registration-domai
 // Use Cases
 import { RegisterCompetitionUseCase } from './applications/use-cases/register-competition.use-case';
 import { GetMyRegistrationsUseCase } from './applications/use-cases/get-my-registrations.use-case';
-import { UploadPaymentProofUseCase } from './applications/use-cases/upload-payment-proof.use-case';
-import { VerifyPaymentUseCase } from './applications/use-cases/verify-payment.use-case';
+import { HandleMootaWebhookUseCase } from './applications/use-cases/handle-moota-webhook.use-case';
+import { GetCompetitionRegistrationsUseCase } from './applications/use-cases/get-competition-registrations.use-case';
+import { SetChampionUseCase } from './applications/use-cases/set-champion.use-case';
 
 // Orchestrator & Controller
 import { RegistrationsOrchestrator } from './applications/orchestrator/registrations.orchestrator';
 import { RegistrationsController } from './interface/http/registrations.controller';
+import { MootaWebhookController } from './interface/http/moota-webhook.controller';
 
 // Cross-Module Imports
 import { UserModule } from '../../identity/users/user.module';
 import { TeamsModule } from '../teams/teams.module';
-import { CompetitionsModule } from '../competitions/competitions.module'; // AKTIF
+import { CompetitionsModule } from '../competitions/competitions.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      CompetitionRegistrationEntity,
-      PaymentEntity,
-      PaymentAccountEntity,
-    ]),
+    TypeOrmModule.forFeature([CompetitionRegistrationEntity]),
     UserModule,
     TeamsModule,
-    CompetitionsModule, // Di-inject agar use-case bisa membaca data lomba & gelombang
+    CompetitionsModule,
   ],
-  controllers: [RegistrationsController],
+  controllers: [RegistrationsController, MootaWebhookController],
   providers: [
     {
       provide: REGISTRATION_REPOSITORY_TOKEN,
       useClass: RegistrationRepository,
     },
-    {
-      provide: PAYMENT_REPOSITORY_TOKEN,
-      useClass: PaymentRepository,
-    },
     RegistrationMapper,
     RegistrationDomainService,
     RegisterCompetitionUseCase,
     GetMyRegistrationsUseCase,
-    UploadPaymentProofUseCase,
-    VerifyPaymentUseCase,
+    GetCompetitionRegistrationsUseCase,
+    SetChampionUseCase,
     RegistrationsOrchestrator,
+    HandleMootaWebhookUseCase,
   ],
   exports: ['REGISTRATION_REPOSITORY_TOKEN'],
 })

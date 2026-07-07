@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { RegistrationStatus } from '../../domains/entities/registration.entity';
+import {
+  RegistrationStatus,
+  ChampionTitle,
+} from '../../domains/entities/registration.entity';
 
 export class RegistrationResponseDto {
   @ApiProperty() id: string = '';
@@ -12,5 +15,7 @@ export class RegistrationResponseDto {
 
   @ApiProperty({ enum: RegistrationStatus })
   status: RegistrationStatus = RegistrationStatus.PENDING_PAYMENT;
+  @ApiProperty({ enum: ChampionTitle })
+  championTitle: ChampionTitle = ChampionTitle.NONE;
   @ApiProperty() registeredAt: Date = new Date();
 }

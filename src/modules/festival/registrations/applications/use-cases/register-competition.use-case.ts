@@ -11,7 +11,10 @@ import {
   type IRegistrationRepository,
   REGISTRATION_REPOSITORY_TOKEN,
 } from '../../infrastructures/repositories/registration.repository.interface';
-import { CompetitionRegistrationEntity } from '../../domains/entities/registration.entity';
+import {
+  CompetitionRegistrationEntity,
+  RegistrationStatus,
+} from '../../domains/entities/registration.entity';
 import { RegistrationDomainService } from '../../domains/services/registration-domain.service';
 import { RegistrationMapper } from '../../domains/mappers/registration.mapper';
 import {
@@ -33,8 +36,10 @@ export class RegisterCompetitionUseCase {
   constructor(
     @Inject(REGISTRATION_REPOSITORY_TOKEN)
     private readonly regRepo: IRegistrationRepository,
-    @Inject(TEAM_REPOSITORY_TOKEN) private readonly teamRepo: ITeamRepository,
-    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(TEAM_REPOSITORY_TOKEN)
+    private readonly teamRepo: ITeamRepository,
+    @Inject(USER_REPOSITORY_TOKEN)
+    private readonly userRepo: IUserRepository,
     @Inject(COMPETITION_REPOSITORY_TOKEN)
     private readonly competitionRepo: ICompetitionRepository,
     private readonly domainService: RegistrationDomainService,
@@ -45,16 +50,23 @@ export class RegisterCompetitionUseCase {
     userId: string,
     dto: RegisterCompetitionDto,
   ): Promise<RegistrationResponseDto> {
-    // 1. Tarik data lomba (beserta relasi waves-nya) dari database
+    // 1. Tarik data lomba (beserta relasi waves-nya)
+    if (!userId) {
+      throw new BadRequestException(
+        'Gagal mendapatkan ID Pengguna. Cek payload token JWT Anda.',
+      );
+    }
+
     const competition = await this.competitionRepo.findById(dto.competitionId);
     if (!competition) throw new BadRequestException('Lomba tidak ditemukan.');
 
     // 2. Cari wave dari array relasi yang sudah ditarik
     const wave = (competition.waves ?? []).find((w) => w.id === dto.waveId);
-    if (!wave)
+    if (!wave) {
       throw new BadRequestException(
         'Gelombang tidak ditemukan pada lomba ini.',
       );
+    }
 
     // 3. Validasi Domain (Jadwal & Tipe Lomba)
     this.domainService.validateWaveIsActive(wave);
@@ -62,21 +74,58 @@ export class RegisterCompetitionUseCase {
 
     const isTeamCompetition =
       competition.participantType === CompetitionParticipantType.TEAM;
+    const participantId = isTeamCompetition ? dto.teamId! : userId;
+
+    const isDuplicate = await this.regRepo.checkDuplicate(
+      dto.competitionId,
+      participantId,
+      isTeamCompetition,
+    );
+
+    if (isDuplicate) {
+      throw new ConflictException(
+        'Anda atau tim Anda sudah terdaftar di lomba ini.',
+      );
+    }
+
+    // =========================================================================
+    // 4. VALIDASI KUOTA MAKSIMAL LOMBA (MAKS 3)
+    // =========================================================================
+    const checkUserQuota = async (targetUserId: string, label: string) => {
+      const userRegs = await this.regRepo.findMyRegistrations(targetUserId);
+      const activeRegs = userRegs.filter(
+        (reg) =>
+          reg.status !== RegistrationStatus.CANCELLED &&
+          reg.status !== RegistrationStatus.REJECTED,
+      );
+
+      if (activeRegs.length >= 3) {
+        throw new BadRequestException(
+          `Batas maksimal tercapai. ${label} sudah mengikuti maksimal 3 cabang perlombaan.`,
+        );
+      }
+    };
+
+    // Cek kuota untuk user yang melakukan pendaftaran (individu / ketua tim)
+    await checkUserQuota(userId, 'Anda');
+    // =========================================================================
+
     const newReg = new CompetitionRegistrationEntity();
     newReg.competitionId = dto.competitionId;
     newReg.waveId = dto.waveId;
 
-    // 4. Validasi Tim dan Kuota Anggota
+    // 5. Validasi Tim dan Kuota Anggota
     if (isTeamCompetition && dto.teamId) {
       const team = await this.teamRepo.findById(dto.teamId);
       if (!team) throw new BadRequestException('Tim tidak ditemukan.');
+
       if (team.leaderId !== userId) {
         throw new BadRequestException(
           'Hanya ketua tim yang berhak mendaftarkan tim ke lomba.',
         );
       }
 
-      const totalMembers = (team.members?.length || 0) + 1; // +1 untuk menghitung leader
+      const totalMembers = (team.members?.length || 0) + 1;
       const min = competition.minTeamMembers || 1;
       const max = competition.maxTeamMembers || 3;
 
@@ -86,6 +135,13 @@ export class RegisterCompetitionUseCase {
         );
       }
 
+      // Cek kuota lomba untuk seluruh anggota tim agar tidak ada "selundupan"
+      if (team.members && team.members.length > 0) {
+        for (const member of team.members) {
+          await checkUserQuota(member.userId, 'Salah satu anggota tim Anda');
+        }
+      }
+
       newReg.teamId = dto.teamId;
       newReg.userId = null;
     } else {
@@ -93,19 +149,70 @@ export class RegisterCompetitionUseCase {
       newReg.teamId = null;
     }
 
+    // 6. Kalkulasi Harga, Kode Unik Moota, dan Masa Tenggang
+    const wavePrice = wave.price ? Number(wave.price) : 0;
+    if (wavePrice === 0) {
+      newReg.uniqueCode = 0;
+      newReg.billingAmount = 0;
+      newReg.status = RegistrationStatus.VERIFIED;
+    } else {
+      let uniqueCode = 0;
+      let billingAmount = 0;
+      let isUnique = false;
+      let attempts = 0;
+
+      // Loop pencarian kode unik maksimal 15 kali percobaan
+      while (!isUnique && attempts < 15) {
+        uniqueCode = Math.floor(Math.random() * 900) + 100; // Acak 100 - 999
+        billingAmount = wavePrice + uniqueCode;
+
+        const existing = await this.regRepo.findByBillingAmountAndStatus(
+          billingAmount,
+          RegistrationStatus.PENDING_PAYMENT,
+        );
+
+        if (!existing) {
+          isUnique = true;
+        }
+        attempts++;
+      }
+
+      if (!isUnique) {
+        throw new InternalServerErrorException(
+          'Sistem pembayaran sedang sibuk, silakan coba beberapa saat lagi.',
+        );
+      }
+
+      newReg.uniqueCode = uniqueCode;
+      newReg.billingAmount = billingAmount;
+      newReg.status = RegistrationStatus.PENDING_PAYMENT;
+
+      // Set batas waktu 24 jam untuk Moota Webhook
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24);
+      newReg.expiresAt = expiresAt;
+    }
+
+    // 7. Eksekusi Penyimpanan
     try {
       const savedReg = await this.regRepo.save(newReg);
-      if (!savedReg.id)
+      if (!savedReg.id) {
         throw new InternalServerErrorException('Gagal menyimpan pendaftaran.');
+      }
+
       const completeReg = await this.regRepo.findById(savedReg.id);
-      if (!completeReg)
+      if (!completeReg) {
         throw new InternalServerErrorException(
           'Gagal memuat data setelah disimpan.',
         );
+      }
+
       return this.mapper.toResponseDto(completeReg);
     } catch (error: unknown) {
+      console.error('=== DETAIL ERROR REGISTRASI ===', error);
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const dbError = error as { code: string };
+        // Deteksi Unique Constraint Violation (Contoh: PostgreSQL code 23505)
         if (dbError.code === '23505') {
           throw new ConflictException(
             'Anda atau tim Anda sudah terdaftar di lomba ini.',
@@ -113,7 +220,7 @@ export class RegisterCompetitionUseCase {
         }
       }
       throw new InternalServerErrorException(
-        'Terjadi kesalahan saat mendaftar lomba.',
+        'Terjadi kesalahan saat menyimpan pendaftaran lomba.',
       );
     }
   }

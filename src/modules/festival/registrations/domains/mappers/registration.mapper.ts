@@ -24,6 +24,7 @@ export class RegistrationMapper {
     dto.competitionName = entity.competition.name ?? 'Lomba Tanpa Nama';
     dto.waveName = entity.wave.name ?? 'Gelombang Reguler';
     dto.status = entity.status;
+    dto.championTitle = entity.championTitle;
     dto.registeredAt = entity.registeredAt;
 
     if (entity.team) {
