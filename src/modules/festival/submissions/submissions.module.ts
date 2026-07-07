@@ -5,15 +5,23 @@ import { SubmissionRepository } from './infrastructures/repositories/submission.
 import { SUBMISSION_REPOSITORY_TOKEN } from './infrastructures/repositories/submission.repository.interface';
 import { SubmissionMapper } from './domains/mappers/submission.mapper';
 import { SubmissionDomainService } from './domains/services/submission-domain.service';
+
+// Use Cases
 import { CreateSubmissionUseCase } from './applications/use-cases/create-submission.use-case';
+import { GetMySubmissionUseCase } from './applications/use-cases/get-my-submission.use-case';
+import { DeleteSubmissionUseCase } from './applications/use-cases/delete-submission.use-case';
+import { GetSubmissionsByCompetitionUseCase } from './applications/use-cases/get-submissions-by-competition.use-case';
+
 import { SubmissionsOrchestrator } from './applications/orchestrator/submissions.orchestrator';
 import { SubmissionsController } from './interface/http/submissions.controller';
 import { RegistrationsModule } from '../registrations/registrations.module';
+import { StorageModule } from '../../shared/storage/storage.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([SubmissionEntity]),
-    RegistrationsModule, // Wajib diimpor karena kita butuh Registration Repository
+    RegistrationsModule,
+    StorageModule, // <-- Berikan akses ke StorageModule
   ],
   controllers: [SubmissionsController],
   providers: [
@@ -24,6 +32,9 @@ import { RegistrationsModule } from '../registrations/registrations.module';
     SubmissionMapper,
     SubmissionDomainService,
     CreateSubmissionUseCase,
+    GetMySubmissionUseCase,
+    GetSubmissionsByCompetitionUseCase,
+    DeleteSubmissionUseCase,
     SubmissionsOrchestrator,
   ],
   exports: [
@@ -31,6 +42,9 @@ import { RegistrationsModule } from '../registrations/registrations.module';
     SubmissionMapper,
     SubmissionDomainService,
     CreateSubmissionUseCase,
+    GetMySubmissionUseCase,
+    GetSubmissionsByCompetitionUseCase,
+    DeleteSubmissionUseCase,
     SubmissionsOrchestrator,
   ],
 })

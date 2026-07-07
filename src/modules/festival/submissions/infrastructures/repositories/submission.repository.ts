@@ -30,4 +30,17 @@ export class SubmissionRepository implements ISubmissionRepository {
       relations: { registration: true },
     });
   }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id);
+  }
+
+  async findByCompetitionId(
+    competitionId: string,
+  ): Promise<SubmissionEntity[]> {
+    return this.repo.find({
+      where: { registration: { competitionId } },
+      relations: { registration: { user: true, team: true } }, // Tarik data peserta juga
+    });
+  }
 }

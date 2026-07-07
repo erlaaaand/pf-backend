@@ -7,7 +7,10 @@ import {
 } from '@nestjs/common';
 import { CreateSubmissionDto } from '../dto/create-submission.dto';
 import { SubmissionResponseDto } from '../dto/submission-response.dto';
-import { SubmissionEntity } from '../../domains/entities/submission.entity';
+import {
+  SubmissionEntity,
+  SubmissionStatus,
+} from '../../domains/entities/submission.entity';
 import {
   type ISubmissionRepository,
   SUBMISSION_REPOSITORY_TOKEN,
@@ -33,6 +36,8 @@ export class CreateSubmissionUseCase {
   async execute(
     userId: string,
     dto: CreateSubmissionDto,
+    fileUrl: string,
+    storedFileId: string,
   ): Promise<SubmissionResponseDto> {
     // 1. Validasi eksistensi pendaftaran
     const registration = await this.regRepo.findById(dto.registrationId);
@@ -49,6 +54,8 @@ export class CreateSubmissionUseCase {
     submission.title = dto.title;
     submission.description = dto.description ?? null;
     submission.fileUrl = dto.fileUrl;
+    submission.storedFileId = storedFileId;
+    submission.status = SubmissionStatus.SUBMITTED;
 
     // 4. Simpan ke database
     try {

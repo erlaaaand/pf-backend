@@ -8,4 +8,6 @@ export interface ISubmissionRepository {
   findByRegistrationId(
     registrationId: string,
   ): Promise<SubmissionEntity | null>;
+  delete(id: string): Promise<void>;
+  findByCompetitionId(competitionId: string): Promise<SubmissionEntity[]>;
 }

@@ -45,6 +45,9 @@ export class SubmissionEntity {
   })
   status: SubmissionStatus = SubmissionStatus.DRAFT;
 
+  @Column({ type: 'varchar', length: 36, nullable: true })
+  storedFileId: string | null = null;
+
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   score: number | null = null; // Nilai dari juri (0.00 - 100.00)
 
