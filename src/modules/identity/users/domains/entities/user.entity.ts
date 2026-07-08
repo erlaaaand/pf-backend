@@ -72,6 +72,13 @@ export class UserEntity {
   @Column({ type: 'timestamp', nullable: true })
   otpExpiresAt: Date | null = null;
 
+  // ── Reset Password ──────────────────────────────────────────
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  resetPasswordOtp: string | null = null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordOtpExpiresAt: Date | null = null;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date = new Date();
 

@@ -7,12 +7,37 @@ import {
   AuthenticatedUser,
   JwtPayload,
 } from '../../domains/entities/jwt-payload.entity';
+import type { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+          let token: string | null = null;
+
+          // 1. Coba ambil dari HttpOnly cookie bernama 'accessToken'
+          if (request && request.cookies) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const cookieToken = request.cookies['accessToken'];
+            if (typeof cookieToken === 'string') {
+              token = cookieToken;
+            }
+          }
+
+          // 2. Fallback: Jika di cookie tidak ada, coba ambil dari header Authorization
+          // (Berguna untuk testing via Postman atau Swagger UI)
+          if (!token && request.headers && request.headers.authorization) {
+            const authHeader = request.headers.authorization;
+            if (authHeader.startsWith('Bearer ')) {
+              token = authHeader.substring(7);
+            }
+          }
+
+          return token;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
       issuer: config.getOrThrow<string>('JWT_ISSUER'),

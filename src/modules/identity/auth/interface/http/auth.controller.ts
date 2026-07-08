@@ -6,10 +6,12 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import type { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -129,8 +131,26 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'Terlalu banyak percobaan login. Coba lagi dalam 1 menit.',
   })
-  login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
-    return this.orchestrator.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response, // <-- Tambahkan decorator Res
+  ) {
+    const result = await this.orchestrator.login(dto);
+
+    // Set HttpOnly Cookie
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Hari
+    });
+
+    // Mengembalikan data user (tanpa mengekspos token di JSON body)
+    return {
+      message: 'Login berhasil',
+      user: result.user,
+    };
   }
 
   // ── Me ─────────────────────────────────────────────────────────────────────
@@ -178,8 +198,23 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Token tidak valid atau sudah expired',
   })
-  async logout(@CurrentUser() user: AuthenticatedUser) {
-    return this.orchestrator.logout(user.sub);
+  async logout(
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // 1. Eksekusi logika logout di orchestrator (misal invalidasi di DB)
+    await this.orchestrator.logout(user.sub);
+
+    // 2. Hapus cookie di browser klien
+    res.cookie('accessToken', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0, // maxAge 0 akan menghancurkan cookie
+    });
+
+    return { message: 'Logout berhasil' };
   }
 
   @Public()

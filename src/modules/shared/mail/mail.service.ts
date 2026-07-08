@@ -108,4 +108,58 @@ export class MailService implements OnModuleInit {
       throw new InternalServerErrorException('Gagal mengirimkan email OTP.');
     }
   }
+
+  async sendResetPasswordEmail(
+    to: string,
+    name: string,
+    otp: string,
+  ): Promise<void> {
+    try {
+      const sender = this.configService.get<string>('EMAIL_USER');
+
+      await this.transporter.sendMail({
+        from: `"Physics Festival XXV" <${sender}>`,
+        to,
+        subject: 'Kode Reset Password Physics Festival XXV',
+        html: `
+          <div style="font-family:Arial,sans-serif">
+            <h2>Halo ${name}</h2>
+
+            <p>Kami menerima permintaan untuk mereset password akun Anda.</p>
+
+            <p>Gunakan kode OTP berikut untuk melanjutkan proses reset password:</p>
+
+            <h1 style="
+              letter-spacing:8px;
+              color:#2563eb;
+            ">
+              ${otp}
+            </h1>
+
+            <p>
+              Kode berlaku selama <b>10 menit</b>.
+            </p>
+
+            <p>
+              Jika Anda tidak merasa melakukan permintaan ini, abaikan email ini
+              dan password Anda akan tetap aman.
+            </p>
+          </div>
+        `,
+      });
+
+      this.logger.log(`Kode reset password berhasil dikirim ke ${to}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.error(
+          `Gagal mengirim email reset password ke ${to}: ${err.message}`,
+          err.stack,
+        );
+      }
+
+      throw new InternalServerErrorException(
+        'Gagal mengirimkan email reset password.',
+      );
+    }
+  }
 }
