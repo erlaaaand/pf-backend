@@ -7,6 +7,7 @@ import {
   IsOptional,
   ValidateNested,
   IsDate,
+  IsBoolean,
 } from 'class-validator';
 import { CompetitionParticipantType } from '../../domains/entities/competition.entity';
 
@@ -52,6 +53,14 @@ export class CreateCompetitionDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Apakah lomba ini mewajibkan pengumpulan karya?',
+  })
+  @IsOptional()
+  @IsBoolean()
+  requiresSubmission?: boolean;
 
   @ApiPropertyOptional({ type: [CreateCompetitionWaveDto] })
   @IsOptional()

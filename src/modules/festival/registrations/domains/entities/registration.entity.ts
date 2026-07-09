@@ -13,6 +13,7 @@ import { CompetitionEntity } from '../../../competitions/domains/entities/compet
 import { CompetitionWaveEntity } from '../../../competitions/domains/entities/competition-wave.entity';
 import { TeamEntity } from '../../../teams/domains/entities/team.entity';
 import { UserEntity } from '../../../../identity/users/domains/entities/user.entity';
+import { StoredFileEntity } from '../../../../shared/storage/domains/entities/stored-file.entity';
 
 export enum RegistrationStatus {
   PENDING_PAYMENT = 'PENDING_PAYMENT',
@@ -45,16 +46,32 @@ export class CompetitionRegistrationEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  // --- INTEGRASI MOOTA ---
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  proofOfPaymentUrl: string | null = null;
 
-  @Column({ type: 'int', default: 0 })
-  uniqueCode: number = 0;
+  @Column({ type: 'text', nullable: true })
+  rejectionReason: string | null = null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  billingAmount: number = 0;
+  // ─── BUKTI PEMBAYARAN (relasi ke Storage Module) ───
+  @Column({ type: 'varchar', length: 36, nullable: true })
+  proofOfPaymentFileId: string | null = null;
+
+  @ManyToOne(() => StoredFileEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'proofOfPaymentFileId' })
+  proofOfPaymentFile?: StoredFileEntity;
 
   @Column({ type: 'timestamp', nullable: true })
-  expiresAt: Date | null = null; // Total yang harus dibayar
+  proofUploadedAt: Date | null = null;
+
+  // ─── VERIFIKASI BENDAHARA ───
+  @Column({ type: 'varchar', length: 36, nullable: true })
+  verifiedBy: string | null = null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verifiedAt: Date | null = null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  verificationNote: string | null = null;
 
   // ─── RELASI KE KOMPETISI ───
   @Column({ type: 'uuid' })

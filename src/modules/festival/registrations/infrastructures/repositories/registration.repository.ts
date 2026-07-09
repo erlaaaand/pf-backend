@@ -26,8 +26,11 @@ export class RegistrationRepository implements IRegistrationRepository {
       relations: {
         competition: true,
         wave: true,
-        team: true,
+        team: {
+          leader: true,
+        },
         user: true,
+        proofOfPaymentFile: true,
       },
     });
   }
@@ -40,21 +43,13 @@ export class RegistrationRepository implements IRegistrationRepository {
       .leftJoinAndSelect('reg.competition', 'competition')
       .leftJoinAndSelect('reg.wave', 'wave')
       .leftJoinAndSelect('reg.team', 'team')
+      .leftJoinAndSelect('team.leader', 'leader')
       .leftJoinAndSelect('reg.user', 'user')
       .leftJoin('team.members', 'members') // Join untuk mengecek keanggotaan
       .where('reg.userId = :userId', { userId }) // Pendaftaran Individu
       .orWhere('team.leaderId = :userId', { userId }) // Pendaftaran Tim (sebagai ketua)
       .orWhere('members.userId = :userId', { userId }) // Pendaftaran Tim (sebagai anggota)
       .getMany();
-  }
-
-  async findByBillingAmountAndStatus(
-    amount: number,
-    status: RegistrationStatus,
-  ): Promise<CompetitionRegistrationEntity | null> {
-    return this.repo.findOne({
-      where: { billingAmount: amount, status: status },
-    });
   }
 
   async checkDuplicate(
@@ -79,9 +74,48 @@ export class RegistrationRepository implements IRegistrationRepository {
       relations: {
         competition: true,
         wave: true,
-        team: true,
+        team: {
+          leader: true,
+        },
         user: true,
       },
     });
+  }
+
+  async findAllByStatus(
+    status: RegistrationStatus,
+  ): Promise<CompetitionRegistrationEntity[]> {
+    return this.repo.find({
+      where: { status },
+      relations: {
+        competition: true,
+        wave: true,
+        team: {
+          leader: true,
+        },
+        user: true,
+        proofOfPaymentFile: true,
+      },
+      order: { registeredAt: 'ASC' },
+    });
+  }
+
+  async findAllPaymentsForTreasurer(): Promise<CompetitionRegistrationEntity[]> {
+    return this.repo
+      .createQueryBuilder('reg')
+      .leftJoinAndSelect('reg.competition', 'competition')
+      .leftJoinAndSelect('reg.wave', 'wave')
+      .leftJoinAndSelect('reg.team', 'team')
+      .leftJoinAndSelect('team.leader', 'leader')
+      .leftJoinAndSelect('reg.user', 'user')
+      .where('reg.status IN (:...statuses)', {
+        statuses: [
+          RegistrationStatus.PENDING_VERIFICATION,
+          RegistrationStatus.VERIFIED,
+          RegistrationStatus.REJECTED,
+        ],
+      })
+      .orderBy('reg.proofUploadedAt', 'DESC')
+      .getMany();
   }
 }

@@ -1,16 +1,27 @@
 // src/shared/storage/applications/dto/upload-file.dto.ts
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsEnum,
   IsIn,
   IsOptional,
   IsString,
   MaxLength,
   Matches,
 } from 'class-validator';
+import { FilePurpose } from '../../domains/entities/stored-file.entity';
 
 export type StorageProvider = 'local' | 's3';
 
 export class UploadFileDto {
+  @ApiPropertyOptional({
+    description: 'Tujuan/kategori file yang diunggah.',
+    enum: FilePurpose,
+    example: FilePurpose.OTHER,
+  })
+  @IsEnum(FilePurpose)
+  @IsOptional()
+  purpose?: FilePurpose;
+
   @ApiPropertyOptional({
     description:
       'Sub-folder penyimpanan. Hanya boleh berisi huruf, angka, strip, dan underscore.',

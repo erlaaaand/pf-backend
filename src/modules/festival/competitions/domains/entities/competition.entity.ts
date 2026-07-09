@@ -27,6 +27,9 @@ export class CompetitionEntity {
   @Column({ type: 'text', nullable: true })
   description: string | null = null;
 
+  @Column({ type: 'boolean', default: false })
+  requiresSubmission: boolean = false;
+
   // Fitur Soft Disable
   @Column({ type: 'boolean', default: true })
   isActive: boolean = true;

@@ -11,11 +11,11 @@ export class CompetitionRepository implements ICompetitionRepository {
     private readonly ormRepo: Repository<CompetitionEntity>,
   ) {}
 
-  async findAll(): Promise<CompetitionEntity[]> {
+  async findAll(
+    includeInactive: boolean = false,
+  ): Promise<CompetitionEntity[]> {
     return this.ormRepo.find({
-      where: {
-        isActive: true,
-      },
+      where: includeInactive ? {} : { isActive: true },
       relations: {
         waves: true,
       },

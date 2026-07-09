@@ -35,6 +35,8 @@ export class UpdateCompetitionUseCase {
     if (dto.description !== undefined)
       competition.description = dto.description;
     if (dto.isActive !== undefined) competition.isActive = dto.isActive;
+    if (dto.requiresSubmission !== undefined)
+      competition.requiresSubmission = dto.requiresSubmission;
 
     const updated = await this.repo.save(competition);
     return this.mapper.toResponseDto(updated);

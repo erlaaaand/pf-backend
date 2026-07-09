@@ -1,6 +1,7 @@
 // src/shared/storage/domains/mappers/storage.mapper.ts
 import { Injectable } from '@nestjs/common';
 import {
+  FilePurpose,
   RawUploadedFile,
   StoredFileEntity,
 } from '../entities/stored-file.entity';
@@ -25,7 +26,11 @@ export class StorageMapper {
     };
   }
 
-  toEntity(result: UploadResult, userId: string): StoredFileEntity {
+  toEntity(
+    result: UploadResult,
+    userId: string,
+    purpose: FilePurpose = FilePurpose.OTHER,
+  ): StoredFileEntity {
     const entity = new StoredFileEntity();
     entity.userId = userId;
     entity.fileKey = result.fileKey;
@@ -34,6 +39,7 @@ export class StorageMapper {
     entity.mimeType = result.mimeType;
     entity.sizeInBytes = result.sizeInBytes;
     entity.provider = result.provider;
+    entity.purpose = purpose;
     return entity;
   }
 

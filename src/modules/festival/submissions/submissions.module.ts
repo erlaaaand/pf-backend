@@ -16,12 +16,14 @@ import { SubmissionsOrchestrator } from './applications/orchestrator/submissions
 import { SubmissionsController } from './interface/http/submissions.controller';
 import { RegistrationsModule } from '../registrations/registrations.module';
 import { StorageModule } from '../../shared/storage/storage.module';
+import { CompetitionsModule } from '../competitions/competitions.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([SubmissionEntity]),
     RegistrationsModule,
     StorageModule, // <-- Berikan akses ke StorageModule
+    CompetitionsModule, // <-- Berikan akses ke ICompetitionRepository (validasi requiresSubmission)
   ],
   controllers: [SubmissionsController],
   providers: [

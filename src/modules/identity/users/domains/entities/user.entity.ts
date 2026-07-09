@@ -16,6 +16,7 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   COMMITTEE = 'COMMITTEE',
   PARTICIPANT = 'PARTICIPANT',
+  TREASURER = 'TREASURER',
 }
 
 @Entity({ name: 'users' })

@@ -15,11 +15,6 @@ export interface IRegistrationRepository {
   // Mencari pendaftaran milik user tertentu (baik individu maupun perwakilan tim)
   findMyRegistrations(userId: string): Promise<CompetitionRegistrationEntity[]>;
 
-  findByBillingAmountAndStatus(
-    amount: number,
-    status: RegistrationStatus,
-  ): Promise<CompetitionRegistrationEntity | null>;
-
   checkDuplicate(
     competitionId: string,
     participantId: string,
@@ -30,4 +25,11 @@ export interface IRegistrationRepository {
     competitionId: string,
     status: RegistrationStatus,
   ): Promise<CompetitionRegistrationEntity[]>;
+
+  // Untuk antrian verifikasi bendahara (lintas lomba)
+  findAllByStatus(
+    status: RegistrationStatus,
+  ): Promise<CompetitionRegistrationEntity[]>;
+
+  findAllPaymentsForTreasurer(): Promise<CompetitionRegistrationEntity[]>;
 }

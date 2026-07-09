@@ -18,4 +18,18 @@ export class RegistrationResponseDto {
   @ApiProperty({ enum: ChampionTitle })
   championTitle: ChampionTitle = ChampionTitle.NONE;
   @ApiProperty() registeredAt: Date = new Date();
+
+  @ApiPropertyOptional({
+    description: 'URL bukti pembayaran yang diunggah peserta.',
+  })
+  proofOfPaymentUrl?: string | null;
+  @ApiPropertyOptional({ description: 'Waktu bukti pembayaran diunggah.' })
+  proofUploadedAt?: Date | null;
+
+  @ApiPropertyOptional({
+    description: 'Catatan dari bendahara (terutama jika ditolak).',
+  })
+  verificationNote?: string | null;
+  @ApiPropertyOptional({ description: 'Waktu verifikasi oleh bendahara.' })
+  verifiedAt?: Date | null;
 }

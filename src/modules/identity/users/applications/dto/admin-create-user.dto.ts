@@ -12,6 +12,7 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   COMMITTEE = 'COMMITTEE',
   PARTICIPANT = 'PARTICIPANT',
+  TREASURER = 'TREASURER',
 }
 
 export class AdminCreateUserDto {

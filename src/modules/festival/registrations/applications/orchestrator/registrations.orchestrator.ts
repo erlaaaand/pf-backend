@@ -6,6 +6,10 @@ import { RegisterCompetitionUseCase } from '../use-cases/register-competition.us
 import { GetMyRegistrationsUseCase } from '../use-cases/get-my-registrations.use-case';
 import { GetCompetitionRegistrationsUseCase } from '../use-cases/get-competition-registrations.use-case';
 import { SetChampionUseCase } from '../use-cases/set-champion.use-case';
+import { UploadPaymentProofUseCase } from '../use-cases/upload-payment-proof.use-case';
+import { VerifyPaymentUseCase } from '../use-cases/verify-payment.use-case';
+import { GetPendingVerificationsUseCase } from '../use-cases/get-pending-verifications.use-case';
+import { VerifyPaymentDto } from '../dto/verify-payment.dto';
 import { ChampionTitle } from '../../domains/entities/registration.entity';
 
 @Injectable()
@@ -15,6 +19,9 @@ export class RegistrationsOrchestrator {
     private readonly getMyRegsUc: GetMyRegistrationsUseCase,
     private readonly getCompetitionRegsUc: GetCompetitionRegistrationsUseCase,
     private readonly setChampionUc: SetChampionUseCase,
+    private readonly uploadPaymentProofUc: UploadPaymentProofUseCase,
+    private readonly verifyPaymentUc: VerifyPaymentUseCase,
+    private readonly getPendingVerificationsUc: GetPendingVerificationsUseCase,
   ) {}
 
   async register(
@@ -39,5 +46,25 @@ export class RegistrationsOrchestrator {
     title: ChampionTitle,
   ): Promise<RegistrationResponseDto> {
     return this.setChampionUc.execute(registrationId, title);
+  }
+
+  async uploadPaymentProof(
+    registrationId: string,
+    userId: string,
+    file: Express.Multer.File | undefined,
+  ): Promise<RegistrationResponseDto> {
+    return this.uploadPaymentProofUc.execute(registrationId, userId, file);
+  }
+
+  async verifyPayment(
+    registrationId: string,
+    bendaharaUserId: string,
+    dto: VerifyPaymentDto,
+  ): Promise<RegistrationResponseDto> {
+    return this.verifyPaymentUc.execute(registrationId, bendaharaUserId, dto);
+  }
+
+  async getPendingVerifications(): Promise<RegistrationResponseDto[]> {
+    return this.getPendingVerificationsUc.execute();
   }
 }

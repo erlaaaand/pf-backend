@@ -27,8 +27,18 @@ export class RegistrationMapper {
     dto.championTitle = entity.championTitle;
     dto.registeredAt = entity.registeredAt;
 
+    dto.proofOfPaymentUrl = entity.proofOfPaymentUrl;
+    dto.proofUploadedAt = entity.proofUploadedAt;
+
+    dto.verificationNote = entity.verificationNote;
+    dto.verifiedAt = entity.verifiedAt;
+
     if (entity.team) {
       dto.teamName = entity.team.name;
+      if (entity.team.leader) {
+        dto.participantName =
+          entity.team.leader.fullName ?? entity.team.leader.email;
+      }
     } else if (entity.user) {
       dto.participantName = entity.user.fullName ?? entity.user.email;
     }

@@ -1,3 +1,5 @@
+// applications/use-cases/get-all-competitions.use-case.ts
+
 import { Inject, Injectable } from '@nestjs/common';
 import {
   type ICompetitionRepository,
@@ -14,8 +16,11 @@ export class GetAllCompetitionsUseCase {
     private readonly mapper: CompetitionMapper,
   ) {}
 
-  async execute(): Promise<CompetitionResponseDto[]> {
-    const competitions = await this.repo.findAll();
+  // Tambahkan parameter includeInactive
+  async execute(
+    includeInactive: boolean = false,
+  ): Promise<CompetitionResponseDto[]> {
+    const competitions = await this.repo.findAll(includeInactive);
     return competitions.map((comp) => this.mapper.toResponseDto(comp));
   }
 }

@@ -40,6 +40,7 @@ export class CompetitionMapper {
       minTeamMembers: entity.minTeamMembers,
       maxTeamMembers: entity.maxTeamMembers,
       description: entity.description,
+      requiresSubmission: entity.requiresSubmission,
       isActive: entity.isActive,
       isOpen,
       activeWave: activeWaveEntity ? this.toWaveDto(activeWaveEntity) : null,

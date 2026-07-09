@@ -24,8 +24,10 @@ export class CompetitionsOrchestrator {
     private readonly updateWaveUseCase: UpdateWaveUseCase,
   ) {}
 
-  async getAll(): Promise<CompetitionResponseDto[]> {
-    return this.getAllUseCase.execute();
+  async getAll(
+    includeInactive: boolean = false,
+  ): Promise<CompetitionResponseDto[]> {
+    return this.getAllUseCase.execute(includeInactive);
   }
 
   async getDetail(id: string): Promise<CompetitionResponseDto> {

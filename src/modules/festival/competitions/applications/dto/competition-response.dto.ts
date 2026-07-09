@@ -41,6 +41,13 @@ export class CompetitionResponseDto {
   @ApiProperty({
     example: true,
     description:
+      'True jika lomba ini mewajibkan pengumpulan karya (misal: LKTI). False untuk cerdas cermat.',
+  })
+  requiresSubmission: boolean = false;
+
+  @ApiProperty({
+    example: true,
+    description:
       'True jika lomba belum ditutup paksa DAN ada gelombang yang sedang berlangsung hari ini.',
   })
   isOpen: boolean = false;

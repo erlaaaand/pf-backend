@@ -1,5 +1,6 @@
 // src/festival/registrations/registrations.module.ts
 import { Module } from '@nestjs/common';
+import { StorageModule } from '../../shared/storage/storage.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Entities
@@ -16,14 +17,15 @@ import { RegistrationDomainService } from './domains/services/registration-domai
 // Use Cases
 import { RegisterCompetitionUseCase } from './applications/use-cases/register-competition.use-case';
 import { GetMyRegistrationsUseCase } from './applications/use-cases/get-my-registrations.use-case';
-import { HandleMootaWebhookUseCase } from './applications/use-cases/handle-moota-webhook.use-case';
 import { GetCompetitionRegistrationsUseCase } from './applications/use-cases/get-competition-registrations.use-case';
 import { SetChampionUseCase } from './applications/use-cases/set-champion.use-case';
+import { UploadPaymentProofUseCase } from './applications/use-cases/upload-payment-proof.use-case';
+import { VerifyPaymentUseCase } from './applications/use-cases/verify-payment.use-case';
+import { GetPendingVerificationsUseCase } from './applications/use-cases/get-pending-verifications.use-case';
 
 // Orchestrator & Controller
 import { RegistrationsOrchestrator } from './applications/orchestrator/registrations.orchestrator';
 import { RegistrationsController } from './interface/http/registrations.controller';
-import { MootaWebhookController } from './interface/http/moota-webhook.controller';
 
 // Cross-Module Imports
 import { UserModule } from '../../identity/users/user.module';
@@ -36,8 +38,9 @@ import { CompetitionsModule } from '../competitions/competitions.module';
     UserModule,
     TeamsModule,
     CompetitionsModule,
+    StorageModule,
   ],
-  controllers: [RegistrationsController, MootaWebhookController],
+  controllers: [RegistrationsController],
   providers: [
     {
       provide: REGISTRATION_REPOSITORY_TOKEN,
@@ -49,8 +52,10 @@ import { CompetitionsModule } from '../competitions/competitions.module';
     GetMyRegistrationsUseCase,
     GetCompetitionRegistrationsUseCase,
     SetChampionUseCase,
+    UploadPaymentProofUseCase,
+    VerifyPaymentUseCase,
+    GetPendingVerificationsUseCase,
     RegistrationsOrchestrator,
-    HandleMootaWebhookUseCase,
   ],
   exports: ['REGISTRATION_REPOSITORY_TOKEN'],
 })

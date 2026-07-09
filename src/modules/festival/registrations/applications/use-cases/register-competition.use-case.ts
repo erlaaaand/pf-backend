@@ -149,50 +149,6 @@ export class RegisterCompetitionUseCase {
       newReg.teamId = null;
     }
 
-    // 6. Kalkulasi Harga, Kode Unik Moota, dan Masa Tenggang
-    const wavePrice = wave.price ? Number(wave.price) : 0;
-    if (wavePrice === 0) {
-      newReg.uniqueCode = 0;
-      newReg.billingAmount = 0;
-      newReg.status = RegistrationStatus.VERIFIED;
-    } else {
-      let uniqueCode = 0;
-      let billingAmount = 0;
-      let isUnique = false;
-      let attempts = 0;
-
-      // Loop pencarian kode unik maksimal 15 kali percobaan
-      while (!isUnique && attempts < 15) {
-        uniqueCode = Math.floor(Math.random() * 900) + 100; // Acak 100 - 999
-        billingAmount = wavePrice + uniqueCode;
-
-        const existing = await this.regRepo.findByBillingAmountAndStatus(
-          billingAmount,
-          RegistrationStatus.PENDING_PAYMENT,
-        );
-
-        if (!existing) {
-          isUnique = true;
-        }
-        attempts++;
-      }
-
-      if (!isUnique) {
-        throw new InternalServerErrorException(
-          'Sistem pembayaran sedang sibuk, silakan coba beberapa saat lagi.',
-        );
-      }
-
-      newReg.uniqueCode = uniqueCode;
-      newReg.billingAmount = billingAmount;
-      newReg.status = RegistrationStatus.PENDING_PAYMENT;
-
-      // Set batas waktu 24 jam untuk Moota Webhook
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 24);
-      newReg.expiresAt = expiresAt;
-    }
-
     // 7. Eksekusi Penyimpanan
     try {
       const savedReg = await this.regRepo.save(newReg);

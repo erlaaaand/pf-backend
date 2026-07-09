@@ -53,7 +53,7 @@ export class UploadFileUseCase {
     const rawFile = this.mapper.toRawUploadedFile(file);
     const uploadResult = await this.storageAdapter.upload(rawFile, fileKey);
 
-    const fileEntity = this.mapper.toEntity(uploadResult, userId);
+    const fileEntity = this.mapper.toEntity(uploadResult, userId, dto.purpose);
     const savedEntity = await this.storedFileRepo.save(fileEntity);
 
     // ── Step 4: Emit event (gunakan savedEntity bukan fileEntity mentah) ──

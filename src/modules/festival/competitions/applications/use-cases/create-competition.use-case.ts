@@ -28,6 +28,7 @@ export class CreateCompetitionUseCase {
     entity.minTeamMembers = dto.minTeamMembers;
     entity.maxTeamMembers = dto.maxTeamMembers;
     entity.description = dto.description ?? null;
+    entity.requiresSubmission = dto.requiresSubmission ?? false;
 
     if (dto.waves && dto.waves.length > 0) {
       entity.waves = dto.waves.map((w) => {
