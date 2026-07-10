@@ -122,6 +122,8 @@ export class RegistrationRepository implements IRegistrationRepository {
       .leftJoinAndSelect('reg.team', 'team')
       .leftJoinAndSelect('team.leader', 'leader')
       .leftJoinAndSelect('reg.user', 'user')
+      .leftJoinAndSelect('team.members', 'members')
+      .leftJoinAndSelect('members.user', 'memberUser')
       .leftJoinAndSelect('reg.paymentAttempts', 'paymentAttempts')
       .where('reg.status IN (:...statuses)', {
         statuses: [

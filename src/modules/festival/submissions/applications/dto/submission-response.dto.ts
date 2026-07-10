@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SubmissionStatus } from '../../domains/entities/submission.entity';
+import { TeamMemberDto } from '../../../registrations/applications/dto/registration-response.dto';
 
 export class SubmissionResponseDto {
   @ApiProperty() id: string = '';
@@ -18,6 +19,10 @@ export class SubmissionResponseDto {
 
   // Extra fields from relations for display
   @ApiPropertyOptional() participantName?: string;
+  @ApiPropertyOptional() participantAvatar?: string | null;
+  @ApiPropertyOptional() participantPhone?: string | null;
   @ApiPropertyOptional() teamName?: string;
   @ApiPropertyOptional() participantEmail?: string;
+  @ApiPropertyOptional() institution?: string | null;
+  @ApiPropertyOptional({ type: [TeamMemberDto] }) members?: TeamMemberDto[];
 }

@@ -15,6 +15,13 @@ export class PaymentAttemptDto {
   @ApiProperty() uploadedAt: Date = new Date();
 }
 
+export class TeamMemberDto {
+  @ApiProperty() name: string = '';
+  @ApiPropertyOptional() avatar?: string | null = null;
+  @ApiPropertyOptional() email?: string | null = null;
+  @ApiPropertyOptional() phone?: string | null = null;
+}
+
 export class RegistrationResponseDto {
   @ApiProperty() id: string = '';
   @ApiProperty() competitionId: string = '';
@@ -24,9 +31,12 @@ export class RegistrationResponseDto {
   @ApiPropertyOptional() teamName: string | null = null;
   @ApiPropertyOptional() teamLeaderId: string | null = null;
   @ApiPropertyOptional() participantName: string | null = null;
+  @ApiPropertyOptional() participantAvatar: string | null = null;
+  @ApiPropertyOptional() participantEmail: string | null = null;
+  @ApiPropertyOptional() participantPhone: string | null = null;
 
   @ApiPropertyOptional() institution?: string | null = null;
-  @ApiPropertyOptional() members?: string[] = [];
+  @ApiPropertyOptional({ type: [TeamMemberDto] }) members?: TeamMemberDto[] = [];
 
   @ApiProperty({ enum: RegistrationStatus })
   status: RegistrationStatus = RegistrationStatus.PENDING_PAYMENT;

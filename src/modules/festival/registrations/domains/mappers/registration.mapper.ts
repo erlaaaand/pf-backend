@@ -58,22 +58,29 @@ export class RegistrationMapper {
     if (entity.team) {
       dto.institution = entity.team.institution;
       dto.members = entity.team.members
-        ? entity.team.members.map((m) =>
-            m.user
-              ? (m.user.fullName ?? m.user.email)
-              : 'Anggota Tidak Diketahui',
-          )
+        ? entity.team.members.map((m) => ({
+            name: m.user ? (m.user.fullName ?? m.user.email) : 'Anggota Tidak Diketahui',
+            avatar: m.user ? m.user.avatarUrl : null,
+            email: m.user ? m.user.email : null,
+            phone: m.user ? m.user.phoneNumber : null,
+          }))
         : [];
       dto.teamName = entity.team.name;
       dto.teamLeaderId = entity.team.leaderId;
       if (entity.team.leader) {
         dto.participantName =
           entity.team.leader.fullName ?? entity.team.leader.email;
+        dto.participantAvatar = entity.team.leader.avatarUrl;
+        dto.participantEmail = entity.team.leader.email;
+        dto.participantPhone = entity.team.leader.phoneNumber;
       }
     } else if (entity.user) {
       dto.institution = entity.user.institution;
       dto.members = [];
       dto.participantName = entity.user.fullName ?? entity.user.email;
+      dto.participantAvatar = entity.user.avatarUrl;
+      dto.participantEmail = entity.user.email;
+      dto.participantPhone = entity.user.phoneNumber;
     }
 
     // Sertakan link WA hanya jika registrasi sudah terverifikasi
