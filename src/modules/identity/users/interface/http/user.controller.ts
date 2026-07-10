@@ -83,12 +83,16 @@ export class UserController {
 
   @Get('search')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Mencari peserta berdasarkan email (untuk tambah anggota tim)' })
+  @ApiOperation({
+    summary: 'Mencari peserta berdasarkan email (untuk tambah anggota tim)',
+  })
   @ApiOkResponse({
     description: 'Berhasil mencari peserta',
     type: [UserResponseDto],
   })
-  async searchParticipants(@Query('q') query: string): Promise<UserResponseDto[]> {
+  async searchParticipants(
+    @Query('q') query: string,
+  ): Promise<UserResponseDto[]> {
     return this.orchestrator.searchParticipants(query);
   }
 

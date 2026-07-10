@@ -3,7 +3,10 @@ import {
   TEAM_REPOSITORY_TOKEN,
   type ITeamRepository,
 } from '../../infrastructures/repositories/team.repository.interface';
-import { REGISTRATION_REPOSITORY_TOKEN, type IRegistrationRepository } from '../../../registrations/infrastructures/repositories/registration.repository.interface';
+import {
+  REGISTRATION_REPOSITORY_TOKEN,
+  type IRegistrationRepository,
+} from '../../../registrations/infrastructures/repositories/registration.repository.interface';
 
 @Injectable()
 export class LeaveTeamUseCase {
@@ -21,16 +24,23 @@ export class LeaveTeamUseCase {
     }
 
     if (team.leaderId !== userId) {
-      throw new BadRequestException('Hanya ketua tim yang dapat membubarkan/meninggalkan tim.');
+      throw new BadRequestException(
+        'Hanya ketua tim yang dapat membubarkan/meninggalkan tim.',
+      );
     }
 
     const regs = await this.regRepo.findByTeamId(team.id!);
     if (regs && regs.length > 0) {
-      throw new BadRequestException('Tim tidak dapat dibubarkan karena sudah terdaftar di perlombaan.');
+      throw new BadRequestException(
+        'Tim tidak dapat dibubarkan karena sudah terdaftar di perlombaan.',
+      );
     }
 
     await this.teamRepo.delete(team.id!);
 
-    return { message: 'Berhasil membatalkan status sebagai ketua tim. Tim telah dibubarkan.' };
+    return {
+      message:
+        'Berhasil membatalkan status sebagai ketua tim. Tim telah dibubarkan.',
+    };
   }
 }

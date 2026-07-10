@@ -72,9 +72,9 @@ export class UserRepository implements IUserRepository {
     return this.ormRepo.find({
       where: {
         role: UserRole.PARTICIPANT,
-        email: ILike(`%${query}%`)
+        email: ILike(`%${query}%`),
       },
-      take: 10
+      take: 10,
     });
   }
 }

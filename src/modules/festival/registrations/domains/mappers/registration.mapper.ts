@@ -57,7 +57,13 @@ export class RegistrationMapper {
 
     if (entity.team) {
       dto.institution = entity.team.institution;
-      dto.members = entity.team.members ? entity.team.members.map(m => m.user ? (m.user.fullName ?? m.user.email) : 'Anggota Tidak Diketahui') : [];
+      dto.members = entity.team.members
+        ? entity.team.members.map((m) =>
+            m.user
+              ? (m.user.fullName ?? m.user.email)
+              : 'Anggota Tidak Diketahui',
+          )
+        : [];
       dto.teamName = entity.team.name;
       dto.teamLeaderId = entity.team.leaderId;
       if (entity.team.leader) {

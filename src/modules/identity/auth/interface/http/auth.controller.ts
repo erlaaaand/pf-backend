@@ -263,7 +263,9 @@ export class AuthController {
   })
   @ApiOkResponse({ description: 'OTP berhasil dikirim.' })
   @ApiBadRequestResponse({ description: 'Email tidak valid.' })
-  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
     return this.orchestrator.forgotPassword(dto);
   }
 
@@ -277,8 +279,12 @@ export class AuthController {
     operationId: 'authResetPassword',
   })
   @ApiOkResponse({ description: 'Password berhasil diubah.' })
-  @ApiBadRequestResponse({ description: 'OTP salah atau format password tidak valid.' })
-  async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+  @ApiBadRequestResponse({
+    description: 'OTP salah atau format password tidak valid.',
+  })
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
     return this.orchestrator.resetPassword(dto);
   }
 }
