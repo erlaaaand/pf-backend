@@ -12,7 +12,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { UserEntity } from '../../../../identity/users/domains/entities/user.entity';
 
-export type StorageProvider = 'local' | 's3';
+export type StorageProvider = 'local' | 's3' | 'cloudinary';
 
 // Tambahan: Enum untuk membedakan fungsi file yang diunggah
 export enum FilePurpose {

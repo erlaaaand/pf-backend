@@ -31,7 +31,7 @@ export class StorageResponseDto {
   @ApiProperty({ example: 1048576, description: 'Ukuran file dalam bytes' })
   sizeInBytes: number = 0;
 
-  @ApiProperty({ enum: ['local', 's3'], example: 'local' })
+  @ApiProperty({ enum: ['local', 's3', 'cloudinary'], example: 'local' })
   provider: StorageProvider = 'local';
 
   @ApiProperty({ example: '2024-01-15T10:30:00.000Z' })

@@ -88,7 +88,7 @@ export class StorageController {
         },
         provider: {
           type: 'string',
-          enum: ['local', 's3'],
+          enum: ['local', 's3', 'cloudinary'],
           example: 'local',
           description:
             'Storage provider. Default mengikuti env `STORAGE_PROVIDER`',

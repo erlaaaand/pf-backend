@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { FilePurpose } from '../../domains/entities/stored-file.entity';
 
-export type StorageProvider = 'local' | 's3';
+export type StorageProvider = 'local' | 's3' | 'cloudinary';
 
 export class UploadFileDto {
   @ApiPropertyOptional({
@@ -39,10 +39,10 @@ export class UploadFileDto {
 
   @ApiPropertyOptional({
     description: 'Storage provider yang digunakan.',
-    enum: ['local', 's3'],
+    enum: ['local', 's3', 'cloudinary'],
     example: 'local',
   })
-  @IsIn(['local', 's3'])
+  @IsIn(['local', 's3', 'cloudinary'])
   @IsOptional()
   provider?: StorageProvider;
 

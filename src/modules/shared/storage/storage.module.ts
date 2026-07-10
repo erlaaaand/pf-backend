@@ -10,6 +10,7 @@ import { StoredFileEntity } from './domains/entities/stored-file.entity';
 // Adapters
 import { LocalStorageAdapter } from './infrastructures/adapters/local-storage.adapter';
 import { S3StorageAdapter } from './infrastructures/adapters/s3-storage.adapter';
+import { CloudinaryStorageAdapter } from './infrastructures/adapters/cloudinary-storage.adapter';
 import { StorageAdapterProvider } from './infrastructures/providers/storage-adapter.provider';
 import { STORAGE_ADAPTER_TOKEN } from './infrastructures/adapters/storage.adapter.interface';
 
@@ -72,6 +73,7 @@ import { AuthModule } from '../../identity/auth/auth.module';
     // ── Adapters ───────────────────────────────────────────────
     LocalStorageAdapter,
     S3StorageAdapter,
+    CloudinaryStorageAdapter,
     StorageAdapterProvider,
 
     // ── Repository ─────────────────────────────────────────────
@@ -104,6 +106,7 @@ import { AuthModule } from '../../identity/auth/auth.module';
     StorageDomainService,
     LocalStorageAdapter,
     S3StorageAdapter,
+    CloudinaryStorageAdapter,
     UploadFileUseCase,
     DeleteStoredFileUseCase,
   ],
