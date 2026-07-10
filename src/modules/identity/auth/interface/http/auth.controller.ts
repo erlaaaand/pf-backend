@@ -29,6 +29,8 @@ import { LoginDto } from '../../applications/dto/login.dto';
 import { RegisterDto } from '../../applications/dto/register.dto';
 import { AuthResponseDto } from '../../applications/dto/auth-response.dto';
 import { VerifyEmailDto } from '../../applications/dto/verify-email.dto';
+import { ForgotPasswordDto } from '../../applications/dto/forgot-password.dto';
+import { ResetPasswordDto } from '../../applications/dto/reset-password.dto';
 import { AuthExceptionFilter } from '../filters/auth-exception.filter';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Public } from '../decorators/public.decorator';
@@ -248,5 +250,35 @@ export class AuthController {
   @ApiBody({ type: VerifyEmailDto })
   async verifyEmail(@Body() dto: VerifyEmailDto): Promise<AuthResponseDto> {
     return this.orchestrator.verifyEmail(dto.email, dto.otp);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ strict: { limit: 3, ttl: 60_000 } })
+  @ApiOperation({
+    summary: 'Kirim OTP Lupa Password',
+    description: 'Mengirimkan kode OTP ke email pengguna untuk reset password.',
+    operationId: 'authForgotPassword',
+  })
+  @ApiOkResponse({ description: 'OTP berhasil dikirim.' })
+  @ApiBadRequestResponse({ description: 'Email tidak valid.' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.orchestrator.forgotPassword(dto);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ strict: { limit: 3, ttl: 60_000 } })
+  @ApiOperation({
+    summary: 'Reset Password',
+    description: 'Mereset password menggunakan OTP yang dikirim ke email.',
+    operationId: 'authResetPassword',
+  })
+  @ApiOkResponse({ description: 'Password berhasil diubah.' })
+  @ApiBadRequestResponse({ description: 'OTP salah atau format password tidak valid.' })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+    return this.orchestrator.resetPassword(dto);
   }
 }

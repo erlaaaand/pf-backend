@@ -21,6 +21,8 @@ import {
   type IRegistrationRepository,
   REGISTRATION_REPOSITORY_TOKEN,
 } from '../../../registrations/infrastructures/repositories/registration.repository.interface';
+import { NotificationsService } from '../../../../shared/notifications/notifications.service';
+import { UserRole } from '../../../../identity/users/domains/entities/user.entity';
 
 @Injectable()
 export class CreateSubmissionUseCase {
@@ -31,6 +33,7 @@ export class CreateSubmissionUseCase {
     private readonly regRepo: IRegistrationRepository,
     private readonly domainService: SubmissionDomainService,
     private readonly mapper: SubmissionMapper,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async execute(
@@ -38,6 +41,8 @@ export class CreateSubmissionUseCase {
     dto: CreateSubmissionDto,
     fileUrl: string,
     storedFileId: string,
+    originalityFileUrl?: string,
+    originalityStoredFileId?: string,
   ): Promise<SubmissionResponseDto> {
     // 1. Validasi eksistensi pendaftaran
     const registration = await this.regRepo.findById(dto.registrationId);
@@ -53,8 +58,10 @@ export class CreateSubmissionUseCase {
     submission.registrationId = dto.registrationId;
     submission.title = dto.title;
     submission.description = dto.description ?? null;
-    submission.fileUrl = dto.fileUrl;
+    submission.fileUrl = fileUrl;
     submission.storedFileId = storedFileId;
+    submission.originalityFileUrl = originalityFileUrl ?? null;
+    submission.originalityStoredFileId = originalityStoredFileId ?? null;
     submission.status = SubmissionStatus.SUBMITTED;
 
     // 4. Simpan ke database
@@ -64,15 +71,33 @@ export class CreateSubmissionUseCase {
         throw new InternalServerErrorException('Gagal menyimpan karya.');
 
       const completeSub = await this.subRepo.findById(savedSub.id);
+
+      // Notify ADMIN and COMMITTEE
+      const participantName =
+        registration.team?.name || registration.user?.email || 'Peserta';
+      await this.notificationsService.sendToRoles(
+        [UserRole.ADMIN, UserRole.COMMITTEE],
+        {
+          title: 'Submission Baru',
+          message: `${participantName} telah mengumpulkan submission untuk lomba ${registration.competition?.name}. Silakan tinjau karya mereka.`,
+          type: 'INFO',
+        },
+      );
+
       return this.mapper.toResponseDto(completeSub!);
     } catch (error: unknown) {
-      if (typeof error === 'object' && error !== null && 'code' in error) {
-        if ((error as { code: string }).code === '23505') {
+      if (typeof error === 'object' && error !== null) {
+        const errObj = error as Record<string, unknown>;
+        const code = errObj.code;
+        const errno = errObj.errno;
+
+        if (code === '23505' || code === 'ER_DUP_ENTRY' || errno === 1062) {
           throw new ConflictException(
             'Karya untuk pendaftaran ini sudah pernah diunggah.',
           );
         }
       }
+      console.error('Submission Error:', error);
       throw new InternalServerErrorException(
         'Terjadi kesalahan saat mengunggah karya.',
       );

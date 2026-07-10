@@ -29,6 +29,7 @@ export class CreateCompetitionUseCase {
     entity.maxTeamMembers = dto.maxTeamMembers;
     entity.description = dto.description ?? null;
     entity.requiresSubmission = dto.requiresSubmission ?? false;
+    entity.whatsappGroupUrl = dto.whatsappGroupUrl ?? null;
 
     if (dto.waves && dto.waves.length > 0) {
       entity.waves = dto.waves.map((w) => {

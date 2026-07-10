@@ -1,4 +1,3 @@
-// src/festival/registrations/domains/entities/registration.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,13 +6,14 @@ import {
   ManyToOne,
   JoinColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
 
 import { CompetitionEntity } from '../../../competitions/domains/entities/competition.entity';
 import { CompetitionWaveEntity } from '../../../competitions/domains/entities/competition-wave.entity';
 import { TeamEntity } from '../../../teams/domains/entities/team.entity';
 import { UserEntity } from '../../../../identity/users/domains/entities/user.entity';
-import { StoredFileEntity } from '../../../../shared/storage/domains/entities/stored-file.entity';
+import { PaymentAttemptEntity } from './payment-attempt.entity';
 
 export enum RegistrationStatus {
   PENDING_PAYMENT = 'PENDING_PAYMENT',
@@ -32,48 +32,23 @@ export enum ChampionTitle {
 }
 
 @Entity({ name: 'competition_registrations' })
-// Index 1: Mencegah 1 user daftar lomba individu yang sama 2x
 @Index('uq_registration_competition_user', ['competitionId', 'userId'], {
   unique: true,
-  where: '"userId" IS NOT NULL', // Hanya berlaku jika userId ada isinya
+  where: '"userId" IS NOT NULL',
 })
-// Index 2: Mencegah 1 tim daftar lomba yang sama 2x
 @Index('uq_registration_competition_team', ['competitionId', 'teamId'], {
   unique: true,
-  where: '"teamId" IS NOT NULL', // Hanya berlaku jika teamId ada isinya
+  where: '"teamId" IS NOT NULL',
 })
 export class CompetitionRegistrationEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  proofOfPaymentUrl: string | null = null;
+  @OneToMany(() => PaymentAttemptEntity, (attempt) => attempt.registration, {
+    cascade: true,
+  })
+  paymentAttempts!: PaymentAttemptEntity[];
 
-  @Column({ type: 'text', nullable: true })
-  rejectionReason: string | null = null;
-
-  // ─── BUKTI PEMBAYARAN (relasi ke Storage Module) ───
-  @Column({ type: 'varchar', length: 36, nullable: true })
-  proofOfPaymentFileId: string | null = null;
-
-  @ManyToOne(() => StoredFileEntity, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'proofOfPaymentFileId' })
-  proofOfPaymentFile?: StoredFileEntity;
-
-  @Column({ type: 'timestamp', nullable: true })
-  proofUploadedAt: Date | null = null;
-
-  // ─── VERIFIKASI BENDAHARA ───
-  @Column({ type: 'varchar', length: 36, nullable: true })
-  verifiedBy: string | null = null;
-
-  @Column({ type: 'timestamp', nullable: true })
-  verifiedAt: Date | null = null;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  verificationNote: string | null = null;
-
-  // ─── RELASI KE KOMPETISI ───
   @Column({ type: 'uuid' })
   competitionId: string = '';
 
@@ -81,18 +56,16 @@ export class CompetitionRegistrationEntity {
   @JoinColumn({ name: 'competitionId' })
   competition?: CompetitionEntity;
 
-  // ─── RELASI KE GELOMBANG (WAVE) ───
   @Column({ type: 'uuid', nullable: true })
   waveId: string | null = null;
 
   @ManyToOne(() => CompetitionWaveEntity, {
-    onDelete: 'RESTRICT', // Tidak boleh menghapus wave jika sudah ada pendaftar
+    onDelete: 'RESTRICT',
     nullable: true,
   })
   @JoinColumn({ name: 'waveId' })
   wave?: CompetitionWaveEntity;
 
-  // ─── RELASI KE PESERTA (UNTUK LOMBA INDIVIDU) ───
   @Column({ type: 'uuid', nullable: true })
   userId: string | null = null;
 
@@ -100,7 +73,6 @@ export class CompetitionRegistrationEntity {
   @JoinColumn({ name: 'userId' })
   user?: UserEntity;
 
-  // ─── RELASI KE TIM (UNTUK LOMBA BERKELOMPOK) ───
   @Column({ type: 'uuid', nullable: true })
   teamId: string | null = null;
 
@@ -108,7 +80,6 @@ export class CompetitionRegistrationEntity {
   @JoinColumn({ name: 'teamId' })
   team?: TeamEntity;
 
-  // ─── STATUS & TANGGAL ───
   @Column({
     type: 'enum',
     enum: RegistrationStatus,

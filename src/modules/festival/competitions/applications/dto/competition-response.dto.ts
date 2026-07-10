@@ -64,4 +64,12 @@ export class CompetitionResponseDto {
 
   @ApiProperty({ type: [CompetitionWaveDto] })
   waves: CompetitionWaveDto[] = [];
+
+  @ApiPropertyOptional({
+    example: 'https://chat.whatsapp.com/xxxxx',
+    description:
+      'Tautan grup WhatsApp koordinasi peserta lomba. Null jika belum diatur.',
+    nullable: true,
+  })
+  whatsappGroupUrl: string | null = null;
 }

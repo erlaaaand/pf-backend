@@ -34,6 +34,14 @@ export class CompetitionEntity {
   @Column({ type: 'boolean', default: true })
   isActive: boolean = true;
 
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+    name: 'whatsapp_group_url',
+  })
+  whatsappGroupUrl: string | null = null;
+
   @OneToMany(() => CompetitionWaveEntity, (wave) => wave.competition, {
     cascade: true,
   })

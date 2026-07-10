@@ -8,6 +8,10 @@ import { LoginUseCase } from '../use-cases/login.use-case';
 import { RegisterUseCase } from '../use-cases/register.use-case';
 import { LogoutService } from '../use-cases/logout.use-case';
 import { VerifyEmailUseCase } from '../use-cases/verify-email.use-case';
+import { ForgotPasswordUseCase } from '../use-cases/forgot-password.use-case';
+import { ResetPasswordUseCase } from '../use-cases/reset-password.use-case';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 @Injectable()
 export class AuthOrchestrator {
@@ -16,6 +20,8 @@ export class AuthOrchestrator {
     private readonly registerUseCase: RegisterUseCase,
     private readonly logoutService: LogoutService,
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
+    private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
   ) {}
 
   async login(dto: LoginDto): Promise<AuthResponseDto> {
@@ -42,5 +48,17 @@ export class AuthOrchestrator {
       ...result,
       message: 'Email berhasil diverifikasi',
     };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.forgotPasswordUseCase.execute(dto.email);
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    return this.resetPasswordUseCase.execute(
+      dto.email,
+      dto.otp,
+      dto.newPassword,
+    );
   }
 }

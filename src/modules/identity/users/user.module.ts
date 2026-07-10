@@ -21,6 +21,8 @@ import { FindUserByEmailUseCase } from './applications/use-cases/find-user-by-em
 import { UpdateUserUseCase } from './applications/use-cases/update-user.use-case';
 import { UpdateAvatarUseCase } from './applications/use-cases/update-avatar.use-case';
 import { AdminCreateUserUseCase } from './applications/use-cases/admin-create-comitte-user.use-case';
+import { FindAllUsersUseCase } from './applications/use-cases/find-all-users.use-case';
+import { SearchParticipantsUseCase } from './applications/use-cases/search-participants.use-case';
 
 // Orchestrator
 import { UserOrchestrator } from './applications/orchestrator/user.orchestrator';
@@ -41,6 +43,8 @@ const USE_CASES = [
   UpdateUserUseCase,
   UpdateAvatarUseCase,
   AdminCreateUserUseCase,
+  FindAllUsersUseCase,
+  SearchParticipantsUseCase,
 ];
 
 @Module({

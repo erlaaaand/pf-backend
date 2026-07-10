@@ -15,9 +15,16 @@ export class SubmissionMapper {
     dto.title = entity.title;
     dto.description = entity.description;
     dto.fileUrl = entity.fileUrl;
+    dto.originalityFileUrl = entity.originalityFileUrl;
     dto.status = entity.status;
     dto.score = entity.score;
     dto.submittedAt = entity.submittedAt;
+
+    if (entity.registration) {
+      dto.teamName = entity.registration.team?.name;
+      dto.participantName = entity.registration.user?.fullName;
+      dto.participantEmail = entity.registration.user?.email;
+    }
 
     return dto;
   }

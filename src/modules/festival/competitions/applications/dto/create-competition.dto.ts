@@ -8,6 +8,7 @@ import {
   ValidateNested,
   IsDate,
   IsBoolean,
+  IsUrl,
 } from 'class-validator';
 import { CompetitionParticipantType } from '../../domains/entities/competition.entity';
 
@@ -67,4 +68,12 @@ export class CreateCompetitionDto {
   @ValidateNested({ each: true })
   @Type(() => CreateCompetitionWaveDto)
   waves?: CreateCompetitionWaveDto[];
+
+  @ApiPropertyOptional({
+    example: 'https://chat.whatsapp.com/xxxxx',
+    description: 'Tautan grup WhatsApp koordinasi. Opsional.',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: 'whatsappGroupUrl harus berupa URL yang valid.' })
+  whatsappGroupUrl?: string;
 }

@@ -15,10 +15,6 @@ import {
 
 @Injectable()
 export class RegistrationDomainService {
-  /**
-   * Hanya peserta individu itu sendiri, atau ketua tim (untuk lomba tim),
-   * yang berhak mengunggah/mengganti bukti pembayaran registrasi ini.
-   */
   assertCanManageProof(
     registration: CompetitionRegistrationEntity,
     requestingUserId: string,
@@ -33,10 +29,6 @@ export class RegistrationDomainService {
     }
   }
 
-  /**
-   * Bukti pembayaran hanya boleh diunggah/diunggah ulang selama status
-   * masih menunggu pembayaran atau baru saja ditolak bendahara.
-   */
   assertCanUploadProof(registration: CompetitionRegistrationEntity): void {
     const allowedStatuses = [
       RegistrationStatus.PENDING_PAYMENT,
@@ -52,10 +44,6 @@ export class RegistrationDomainService {
     }
   }
 
-  /**
-   * Bendahara hanya dapat memverifikasi (approve/reject) pendaftaran yang
-   * berstatus PENDING_VERIFICATION (yaitu sudah ada bukti pembayaran).
-   */
   assertCanVerify(registration: CompetitionRegistrationEntity): void {
     const allowedStatuses = [
       RegistrationStatus.PENDING_VERIFICATION,
@@ -89,7 +77,6 @@ export class RegistrationDomainService {
     competition: CompetitionEntity,
     teamId?: string,
   ): void {
-    // Perbaikan syntax error: Memberi string 'TEAM' sebagai perbandingan
     const isTeamCompetition =
       competition.participantType === CompetitionParticipantType.TEAM;
     if (isTeamCompetition && !teamId) {

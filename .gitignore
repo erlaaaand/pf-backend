@@ -56,3 +56,8 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 public
+
+seed
+run-seed.ts
+test-repo.ts
+test-usecase.ts

@@ -37,6 +37,8 @@ export class UpdateCompetitionUseCase {
     if (dto.isActive !== undefined) competition.isActive = dto.isActive;
     if (dto.requiresSubmission !== undefined)
       competition.requiresSubmission = dto.requiresSubmission;
+    if (dto.whatsappGroupUrl !== undefined)
+      competition.whatsappGroupUrl = dto.whatsappGroupUrl;
 
     const updated = await this.repo.save(competition);
     return this.mapper.toResponseDto(updated);

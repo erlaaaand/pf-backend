@@ -5,12 +5,14 @@ export class TeamMemberDto {
   @ApiProperty() userId: string = '';
   @ApiProperty() fullName: string = '';
   @ApiProperty() joinedAt: Date = new Date();
+  @ApiProperty({ nullable: true }) avatarUrl: string | null = null;
 }
 
 export class TeamLeaderDto {
   @ApiProperty() id: string = '';
   @ApiProperty() fullName: string = '';
   @ApiProperty() email: string = '';
+  @ApiProperty({ nullable: true }) avatarUrl: string | null = null;
 }
 
 export class TeamResponseDto {

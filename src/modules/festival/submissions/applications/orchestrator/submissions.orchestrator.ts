@@ -20,6 +20,7 @@ export class SubmissionsOrchestrator {
     userId: string,
     dto: CreateSubmissionDto,
     file?: Express.Multer.File,
+    originalityFile?: Express.Multer.File,
   ): Promise<SubmissionResponseDto> {
     if (!file) throw new BadRequestException('File karya wajib diunggah.');
 
@@ -28,11 +29,23 @@ export class SubmissionsOrchestrator {
       { context: 'submissions' },
       userId,
     );
+
+    let originalityUploadResult = null;
+    if (originalityFile) {
+      originalityUploadResult = await this.storageOrchestrator.upload(
+        originalityFile,
+        { context: 'originality' },
+        userId,
+      );
+    }
+
     return this.createUc.execute(
       userId,
       dto,
       uploadResult.fileUrl,
       uploadResult.storedFileId,
+      originalityUploadResult?.fileUrl,
+      originalityUploadResult?.storedFileId,
     );
   }
 

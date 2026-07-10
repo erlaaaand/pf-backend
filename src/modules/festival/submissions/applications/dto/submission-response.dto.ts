@@ -6,9 +6,18 @@ export class SubmissionResponseDto {
   @ApiProperty() registrationId: string = '';
   @ApiProperty() title: string = '';
   @ApiPropertyOptional() description: string | null = null;
-  @ApiProperty() fileUrl: string = '';
+  @ApiProperty()
+  fileUrl: string = '';
+
+  @ApiPropertyOptional()
+  originalityFileUrl: string | null = null;
   @ApiProperty({ enum: SubmissionStatus }) status: SubmissionStatus =
     SubmissionStatus.DRAFT;
   @ApiPropertyOptional() score: number | null = null;
   @ApiProperty() submittedAt: Date = new Date();
+
+  // Extra fields from relations for display
+  @ApiPropertyOptional() participantName?: string;
+  @ApiPropertyOptional() teamName?: string;
+  @ApiPropertyOptional() participantEmail?: string;
 }

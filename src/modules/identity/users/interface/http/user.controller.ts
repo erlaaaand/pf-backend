@@ -13,6 +13,7 @@ import {
   UseGuards,
   Header,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -66,6 +67,29 @@ export class UserController {
   })
   async createByAdmin(@Body() dto: AdminCreateUserDto) {
     return this.orchestrator.adminCreateUser(dto);
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: '(ADMIN) Mendapatkan daftar seluruh user' })
+  @ApiOkResponse({
+    description: 'Berhasil mendapatkan daftar user',
+    type: [UserResponseDto],
+  })
+  async findAll(): Promise<UserResponseDto[]> {
+    return this.orchestrator.findAll();
+  }
+
+  @Get('search')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mencari peserta berdasarkan email (untuk tambah anggota tim)' })
+  @ApiOkResponse({
+    description: 'Berhasil mencari peserta',
+    type: [UserResponseDto],
+  })
+  async searchParticipants(@Query('q') query: string): Promise<UserResponseDto[]> {
+    return this.orchestrator.searchParticipants(query);
   }
 
   // ── GET /users/me ──────────────────────────────────────────────────────────

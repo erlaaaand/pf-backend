@@ -8,6 +8,8 @@ import { FindUserByEmailUseCase } from '../use-cases/find-user-by-email.use-case
 import { UpdateUserUseCase } from '../use-cases/update-user.use-case';
 import { UpdateAvatarUseCase } from '../use-cases/update-avatar.use-case';
 import { AdminCreateUserUseCase } from '../use-cases/admin-create-comitte-user.use-case';
+import { FindAllUsersUseCase } from '../use-cases/find-all-users.use-case';
+import { SearchParticipantsUseCase } from '../use-cases/search-participants.use-case';
 import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 
 @Injectable()
@@ -19,6 +21,8 @@ export class UserOrchestrator {
     private readonly updateUser: UpdateUserUseCase,
     private readonly updateAvatarUc: UpdateAvatarUseCase,
     private readonly adminCreateUserUc: AdminCreateUserUseCase,
+    private readonly findAllUsersUc: FindAllUsersUseCase,
+    private readonly searchParticipantsUc: SearchParticipantsUseCase,
   ) {}
 
   getById(id: string): Promise<UserResponseDto> {
@@ -45,5 +49,13 @@ export class UserOrchestrator {
     dto: AdminCreateUserDto,
   ): Promise<{ message: string; userId: string }> {
     return this.adminCreateUserUc.execute(dto);
+  }
+
+  findAll(): Promise<UserResponseDto[]> {
+    return this.findAllUsersUc.execute();
+  }
+
+  searchParticipants(query: string): Promise<UserResponseDto[]> {
+    return this.searchParticipantsUc.execute(query);
   }
 }

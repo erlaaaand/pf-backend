@@ -14,6 +14,27 @@ const multerOptions: MulterOptions = {
 };
 
 /**
- * Interceptor standar untuk semua upload file di module ini.
+ * Interceptor standar untuk semua upload file tunggal di module ini.
  */
 export const FileUploadInterceptor = FileInterceptor('file', multerOptions);
+
+/**
+ * Interceptor untuk upload multiple file (file dan originalityFile).
+ */
+const multipleMulterOptions: MulterOptions = {
+  storage: storageEngine,
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB
+    files: 2,
+  },
+};
+
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+
+export const MultipleFileUploadInterceptor = FileFieldsInterceptor(
+  [
+    { name: 'file', maxCount: 1 },
+    { name: 'originalityFile', maxCount: 1 },
+  ],
+  multipleMulterOptions,
+);

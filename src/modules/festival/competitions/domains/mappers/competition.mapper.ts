@@ -45,6 +45,7 @@ export class CompetitionMapper {
       isOpen,
       activeWave: activeWaveEntity ? this.toWaveDto(activeWaveEntity) : null,
       waves: sortedWaves.map((w) => this.toWaveDto(w)),
+      whatsappGroupUrl: entity.whatsappGroupUrl ?? null,
     };
   }
 }

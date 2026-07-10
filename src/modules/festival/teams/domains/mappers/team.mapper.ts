@@ -25,6 +25,7 @@ export class TeamMapper {
         id: entity.leader.id,
         fullName: entity.leader.fullName ?? 'Tanpa Nama',
         email: entity.leader.email,
+        avatarUrl: entity.leader.avatarUrl,
       };
     }
 
@@ -38,6 +39,7 @@ export class TeamMapper {
       memberDto.userId = m.userId;
       memberDto.fullName = m.user.fullName ?? 'Tanpa Nama';
       memberDto.joinedAt = m.joinedAt;
+      memberDto.avatarUrl = m.user.avatarUrl;
 
       return memberDto;
     });

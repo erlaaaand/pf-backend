@@ -1,7 +1,7 @@
 // src/users/infrastructures/repositories/user.repository.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { UserEntity } from '../../domains/entities/user.entity';
 import { IUserRepository } from './user.repository.interface';
 import { UserRole } from '../../../users/domains/entities/user.entity';
@@ -66,5 +66,15 @@ export class UserRepository implements IUserRepository {
 
   async findComitteByEmail(email: string): Promise<UserEntity | null> {
     return this.ormRepo.findOne({ where: { email, role: UserRole.COMMITTEE } });
+  }
+
+  async searchParticipants(query: string): Promise<UserEntity[]> {
+    return this.ormRepo.find({
+      where: {
+        role: UserRole.PARTICIPANT,
+        email: ILike(`%${query}%`)
+      },
+      take: 10
+    });
   }
 }

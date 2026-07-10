@@ -12,6 +12,8 @@ export interface IRegistrationRepository {
 
   findById(id: string): Promise<CompetitionRegistrationEntity | null>;
 
+  findByTeamId(teamId: string): Promise<CompetitionRegistrationEntity[]>;
+
   // Mencari pendaftaran milik user tertentu (baik individu maupun perwakilan tim)
   findMyRegistrations(userId: string): Promise<CompetitionRegistrationEntity[]>;
 

@@ -28,11 +28,18 @@ export class RegistrationRepository implements IRegistrationRepository {
         wave: true,
         team: {
           leader: true,
+          members: { user: true },
         },
         user: true,
-        proofOfPaymentFile: true,
+        paymentAttempts: {
+          proofOfPaymentFile: true,
+        },
       },
     });
+  }
+
+  async findByTeamId(teamId: string): Promise<CompetitionRegistrationEntity[]> {
+    return this.repo.find({ where: { teamId: teamId } });
   }
 
   async findMyRegistrations(
@@ -45,10 +52,11 @@ export class RegistrationRepository implements IRegistrationRepository {
       .leftJoinAndSelect('reg.team', 'team')
       .leftJoinAndSelect('team.leader', 'leader')
       .leftJoinAndSelect('reg.user', 'user')
-      .leftJoin('team.members', 'members') // Join untuk mengecek keanggotaan
-      .where('reg.userId = :userId', { userId }) // Pendaftaran Individu
-      .orWhere('team.leaderId = :userId', { userId }) // Pendaftaran Tim (sebagai ketua)
-      .orWhere('members.userId = :userId', { userId }) // Pendaftaran Tim (sebagai anggota)
+      .leftJoinAndSelect('reg.paymentAttempts', 'paymentAttempts')
+      .leftJoin('team.members', 'members')
+      .where('reg.userId = :userId', { userId })
+      .orWhere('team.leaderId = :userId', { userId })
+      .orWhere('members.userId = :userId', { userId })
       .getMany();
   }
 
@@ -62,7 +70,7 @@ export class RegistrationRepository implements IRegistrationRepository {
       : { competitionId: competitionId, userId: participantId };
 
     const existing = await this.repo.findOne({ where: whereClause });
-    return !!existing; // Mengembalikan true jika sudah ada data
+    return !!existing;
   }
 
   async findByCompetitionIdAndStatus(
@@ -76,6 +84,7 @@ export class RegistrationRepository implements IRegistrationRepository {
         wave: true,
         team: {
           leader: true,
+          members: { user: true },
         },
         user: true,
       },
@@ -92,15 +101,20 @@ export class RegistrationRepository implements IRegistrationRepository {
         wave: true,
         team: {
           leader: true,
+          members: { user: true },
         },
         user: true,
-        proofOfPaymentFile: true,
+        paymentAttempts: {
+          proofOfPaymentFile: true,
+        },
       },
       order: { registeredAt: 'ASC' },
     });
   }
 
-  async findAllPaymentsForTreasurer(): Promise<CompetitionRegistrationEntity[]> {
+  async findAllPaymentsForTreasurer(): Promise<
+    CompetitionRegistrationEntity[]
+  > {
     return this.repo
       .createQueryBuilder('reg')
       .leftJoinAndSelect('reg.competition', 'competition')
@@ -108,6 +122,7 @@ export class RegistrationRepository implements IRegistrationRepository {
       .leftJoinAndSelect('reg.team', 'team')
       .leftJoinAndSelect('team.leader', 'leader')
       .leftJoinAndSelect('reg.user', 'user')
+      .leftJoinAndSelect('reg.paymentAttempts', 'paymentAttempts')
       .where('reg.status IN (:...statuses)', {
         statuses: [
           RegistrationStatus.PENDING_VERIFICATION,
@@ -115,7 +130,7 @@ export class RegistrationRepository implements IRegistrationRepository {
           RegistrationStatus.REJECTED,
         ],
       })
-      .orderBy('reg.proofUploadedAt', 'DESC')
+      .orderBy('paymentAttempts.uploadedAt', 'DESC')
       .getMany();
   }
 }

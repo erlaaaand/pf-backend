@@ -45,4 +45,10 @@ export class UploadFileDto {
   @IsIn(['local', 's3'])
   @IsOptional()
   provider?: StorageProvider;
+
+  // Added to bypass validation pipe complaining about "property file should not exist"
+  // when using Multer.
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  @IsOptional()
+  file?: any;
 }

@@ -21,6 +21,8 @@ import { LoginUseCase } from './applications/use-cases/login.use-case';
 import { RegisterUseCase } from './applications/use-cases/register.use-case';
 import { LogoutService } from './applications/use-cases/logout.use-case';
 import { VerifyEmailUseCase } from './applications/use-cases/verify-email.use-case';
+import { ForgotPasswordUseCase } from './applications/use-cases/forgot-password.use-case';
+import { ResetPasswordUseCase } from './applications/use-cases/reset-password.use-case';
 
 // Orchestrator
 import { AuthOrchestrator } from './applications/orchestrator/auth.orchestrator';
@@ -70,6 +72,8 @@ import { UserLoggedInListener } from './infrastructures/listeners/user-logged-in
     UserLoggedInListener,
     LogoutService,
     VerifyEmailUseCase,
+    ForgotPasswordUseCase,
+    ResetPasswordUseCase,
   ],
   exports: [JwtAuthGuard, JwtModule, TokenService],
 })

@@ -22,6 +22,31 @@ export class UserResponseDto {
   })
   fullName: string | null = null;
 
+  @ApiPropertyOptional({
+    example: 'https://storage.googleapis.com/...',
+    nullable: true,
+    description: 'URL foto profil',
+  })
+  avatarUrl: string | null = null;
+
+  @ApiProperty({
+    example: '081234567890',
+    description: 'Nomor telepon',
+  })
+  phoneNumber: string = '';
+
+  @ApiProperty({
+    example: 'SMA Negeri 1',
+    description: 'Asal sekolah/instansi',
+  })
+  institution: string = '';
+
+  @ApiProperty({
+    example: 'PARTICIPANT',
+    description: 'Role user',
+  })
+  role: string = '';
+
   @ApiProperty({
     example: true,
     description: 'false jika akun telah dinonaktifkan (soft delete)',

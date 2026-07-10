@@ -3,6 +3,17 @@ import {
   RegistrationStatus,
   ChampionTitle,
 } from '../../domains/entities/registration.entity';
+import { PaymentAttemptStatus } from '../../domains/entities/payment-attempt.entity';
+
+export class PaymentAttemptDto {
+  @ApiProperty() id: string = '';
+  @ApiProperty() proofOfPaymentUrl: string = '';
+  @ApiProperty({ enum: PaymentAttemptStatus }) status: PaymentAttemptStatus =
+    PaymentAttemptStatus.PENDING;
+  @ApiPropertyOptional() rejectionReason?: string | null;
+  @ApiPropertyOptional() verifiedAt?: Date | null;
+  @ApiProperty() uploadedAt: Date = new Date();
+}
 
 export class RegistrationResponseDto {
   @ApiProperty() id: string = '';
@@ -11,7 +22,11 @@ export class RegistrationResponseDto {
   @ApiProperty() waveName: string = '';
 
   @ApiPropertyOptional() teamName: string | null = null;
-  @ApiPropertyOptional() participantName: string | null = null; // Nama user jika individu
+  @ApiPropertyOptional() teamLeaderId: string | null = null;
+  @ApiPropertyOptional() participantName: string | null = null;
+
+  @ApiPropertyOptional() institution?: string | null = null;
+  @ApiPropertyOptional() members?: string[] = [];
 
   @ApiProperty({ enum: RegistrationStatus })
   status: RegistrationStatus = RegistrationStatus.PENDING_PAYMENT;
@@ -32,4 +47,14 @@ export class RegistrationResponseDto {
   verificationNote?: string | null;
   @ApiPropertyOptional({ description: 'Waktu verifikasi oleh bendahara.' })
   verifiedAt?: Date | null;
+
+  @ApiProperty({ type: [PaymentAttemptDto] })
+  paymentAttempts: PaymentAttemptDto[] = [];
+
+  @ApiPropertyOptional({
+    description:
+      'Tautan grup WhatsApp lomba. Hanya tersedia setelah pembayaran terverifikasi.',
+    nullable: true,
+  })
+  whatsappGroupUrl: string | null = null;
 }

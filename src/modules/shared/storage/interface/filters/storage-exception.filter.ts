@@ -37,7 +37,7 @@ export class StorageExceptionFilter implements ExceptionFilter {
         ? (exceptionResponse as { message: string | string[] }).message
         : exception.message;
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status === 500) {
       this.logger.error(
         `[Storage] SYSTEM ERROR ${req.method} ${req.url} → Asli: ${JSON.stringify(message)} | Stack: ${exception.stack}`,
       );

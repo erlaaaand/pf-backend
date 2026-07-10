@@ -1,5 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CompetitionRegistrationEntity } from '../entities/registration.entity';
+import {
+  CompetitionRegistrationEntity,
+  RegistrationStatus,
+} from '../entities/registration.entity';
 import { RegistrationResponseDto } from '../../applications/dto/registration-response.dto';
 
 @Injectable()
@@ -27,20 +30,54 @@ export class RegistrationMapper {
     dto.championTitle = entity.championTitle;
     dto.registeredAt = entity.registeredAt;
 
-    dto.proofOfPaymentUrl = entity.proofOfPaymentUrl;
-    dto.proofUploadedAt = entity.proofUploadedAt;
+    const attempts = entity.paymentAttempts || [];
+    attempts.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    const latestAttempt = attempts[0];
 
-    dto.verificationNote = entity.verificationNote;
-    dto.verifiedAt = entity.verifiedAt;
+    if (latestAttempt) {
+      dto.proofOfPaymentUrl = latestAttempt.proofOfPaymentUrl;
+      dto.proofUploadedAt = latestAttempt.uploadedAt;
+      dto.verificationNote = latestAttempt.rejectionReason;
+      dto.verifiedAt = latestAttempt.verifiedAt;
+    } else {
+      dto.proofOfPaymentUrl = null;
+      dto.proofUploadedAt = null;
+      dto.verificationNote = null;
+      dto.verifiedAt = null;
+    }
+
+    dto.paymentAttempts = attempts.map((attempt) => ({
+      id: attempt.id,
+      proofOfPaymentUrl: attempt.proofOfPaymentUrl,
+      status: attempt.status,
+      rejectionReason: attempt.rejectionReason,
+      verifiedAt: attempt.verifiedAt,
+      uploadedAt: attempt.uploadedAt,
+    }));
 
     if (entity.team) {
+      dto.institution = entity.team.institution;
+      dto.members = entity.team.members ? entity.team.members.map(m => m.user ? (m.user.fullName ?? m.user.email) : 'Anggota Tidak Diketahui') : [];
       dto.teamName = entity.team.name;
+      dto.teamLeaderId = entity.team.leaderId;
       if (entity.team.leader) {
         dto.participantName =
           entity.team.leader.fullName ?? entity.team.leader.email;
       }
     } else if (entity.user) {
+      dto.institution = entity.user.institution;
+      dto.members = [];
       dto.participantName = entity.user.fullName ?? entity.user.email;
+    }
+
+    // Sertakan link WA hanya jika registrasi sudah terverifikasi
+    if (
+      entity.status === RegistrationStatus.VERIFIED &&
+      entity.competition?.whatsappGroupUrl
+    ) {
+      dto.whatsappGroupUrl = entity.competition.whatsappGroupUrl;
+    } else {
+      dto.whatsappGroupUrl = null;
     }
 
     return dto;

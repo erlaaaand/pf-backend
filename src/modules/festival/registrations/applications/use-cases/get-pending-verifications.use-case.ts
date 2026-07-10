@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RegistrationResponseDto } from '../dto/registration-response.dto';
-import { RegistrationStatus } from '../../domains/entities/registration.entity';
 import {
   type IRegistrationRepository,
   REGISTRATION_REPOSITORY_TOKEN,

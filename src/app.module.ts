@@ -20,6 +20,7 @@ import { CompetitionsModule } from './modules/festival/competitions/competitions
 import { TeamsModule } from './modules/festival/teams/teams.module';
 import { RegistrationsModule } from './modules/festival/registrations/registrations.module';
 import { SubmissionsModule } from './modules/festival/submissions/submissions.module';
+import { NotificationsModule } from './modules/shared/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { SubmissionsModule } from './modules/festival/submissions/submissions.mo
     TeamsModule,
     RegistrationsModule,
     SubmissionsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

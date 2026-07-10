@@ -111,7 +111,9 @@ async function bootstrap(): Promise<void> {
   // 6. Setup CSRF Protection (Double Submit Cookie)
   // ===========================================================================
   const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
-    getSecret: () => configService.get<string>('CSRF_SECRET') ?? 'default_secret_fallback_value',
+    getSecret: () =>
+      configService.get<string>('CSRF_SECRET') ??
+      'default_secret_fallback_value',
     cookieName: isProd ? '__Host-psifest.x-csrf-token' : 'x-csrf-token',
     cookieOptions: {
       httpOnly: true,
@@ -149,7 +151,8 @@ async function bootstrap(): Promise<void> {
     if (isCsrfError(err)) {
       res.status(403).json({
         statusCode: 403,
-        message: 'Token CSRF tidak valid atau kedaluwarsa. Silakan refresh halaman.',
+        message:
+          'Token CSRF tidak valid atau kedaluwarsa. Silakan refresh halaman.',
         error: 'Forbidden',
       });
     } else {

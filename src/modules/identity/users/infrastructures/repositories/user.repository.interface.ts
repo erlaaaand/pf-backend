@@ -12,6 +12,7 @@ export interface IUserRepository {
   update(id: string, data: Partial<UserEntity>): Promise<UserEntity>;
   softDelete(id: string): Promise<void>;
   existsByEmail(email: string): Promise<boolean>;
+  searchParticipants(query: string): Promise<UserEntity[]>;
 }
 
 export const USER_REPOSITORY_TOKEN = Symbol('IUserRepository');
