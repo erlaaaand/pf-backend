@@ -1,0 +1,125 @@
+services:
+  # ==============================================================================
+  # 1. NestJS Backend Application
+  # ==============================================================================
+  pf-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pf-backend
+    ports:
+      - "3001:3001"
+    env_file: .env.development.local
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      # Mengarahkan koneksi ke kontainer mysql di dalam network docker
+      - DB_HOST=pf-mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=secretpassword
+      - DB_DATABASE=physics_festival_db
+      # Mengarahkan layanan tambahan ke kontainer masing-masing
+      - REDIS_HOST=pf-redis
+      - REDIS_PORT=6379
+      - MONGO_URI=mongodb://admin:secretpassword@pf-mongodb:27017/physics_festival?authSource=admin
+      - RABBITMQ_URL=amqp://guest:guest@pf-rabbitmq:5672
+      - ELASTICSEARCH_NODE=http://pf-elasticsearch:9200
+    depends_on:
+      - pf-mysql
+      - pf-redis
+      - pf-mongodb
+      - pf-rabbitmq
+      - pf-elasticsearch
+    networks:
+      - pf-network
+
+  # ==============================================================================
+  # 2. MySQL Database
+  # ==============================================================================
+  pf-mysql:
+    image: mysql:8.0
+    container_name: pf-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secretpassword
+      MYSQL_DATABASE: physics_festival_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - pf-network
+
+  # ==============================================================================
+  # 3. Redis (Cache & Session)
+  # ==============================================================================
+  pf-redis:
+    image: redis:7-alpine
+    container_name: pf-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pf-network
+
+  # ==============================================================================
+  # 4. MongoDB (Audit Log & Dynamic Data)
+  # ==============================================================================
+  pf-mongodb:
+    image: mongo:6
+    container_name: pf-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secretpassword
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pf-network
+
+  # ==============================================================================
+  # 5. RabbitMQ (Message Broker)
+  # ==============================================================================
+  pf-rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: pf-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI dashboard port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - pf-network
+
+  # ==============================================================================
+  # 6. Elasticsearch (Search Engine)
+  # ==============================================================================
+  pf-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: pf-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - pf-network
+
+networks:
+  pf-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  mongo_data:
+  rabbitmq_data:
+  es_data:

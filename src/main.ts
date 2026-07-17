@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
+import { Transport, type MicroserviceOptions } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -16,9 +17,6 @@ import { AppModule } from './app.module';
 
 dns.setDefaultResultOrder('ipv4first');
 
-// ===========================================================================
-// Type Guard Helper untuk menangkap Error CSRF tanpa menggunakan 'any'
-// ===========================================================================
 interface CsrfError extends Error {
   code: string;
 }
@@ -44,13 +42,24 @@ async function bootstrap(): Promise<void> {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   const isProd = nodeEnv === 'production';
 
-  // 0. Validasi secret
-  const requiredSecrets = [
-    'JWT_ACCESS_SECRET',
-    'JWT_REFRESH_SECRET',
-    'COOKIE_SECRET',
-    'CSRF_SECRET',
-  ];
+  // 0. Setup Microservice (RabbitMQ Consumer)
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        configService.get<string>(
+          'RABBITMQ_URL',
+          'amqp://guest:guest@localhost:5672',
+        ),
+      ],
+      queue: 'pf_main_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+
+  const requiredSecrets = ['JWT_SECRET', 'COOKIE_SECRET', 'CSRF_SECRET'];
 
   for (const key of requiredSecrets) {
     const value = configService.get<string>(key);
@@ -114,12 +123,13 @@ async function bootstrap(): Promise<void> {
     getSecret: () =>
       configService.get<string>('CSRF_SECRET') ??
       'default_secret_fallback_value',
-    cookieName: isProd ? '__Host-psifest.x-csrf-token' : 'x-csrf-token',
+    cookieName: 'x-csrf-token',
     cookieOptions: {
       httpOnly: true,
       sameSite: 'lax',
       secure: isProd,
       path: '/',
+      domain: isProd ? '.physicsfest.my.id' : undefined,
     },
     getCsrfTokenFromRequest: (req: Request) => {
       const token = req.headers['x-csrf-token'];
@@ -144,9 +154,7 @@ async function bootstrap(): Promise<void> {
   // Terapkan middleware CSRF untuk semua rute NestJS
   app.use(doubleCsrfProtection);
 
-  // ===========================================================================
-  // 7. CSRF Error Handler (Type-Safe, bebas any)
-  // ===========================================================================
+  // 7. CSRF Error Handler
   app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
     if (isCsrfError(err)) {
       res.status(403).json({
@@ -200,6 +208,9 @@ async function bootstrap(): Promise<void> {
 
   // 10. Graceful shutdown
   app.enableShutdownHooks();
+
+  // Start RabbitMQ Consumers
+  await app.startAllMicroservices();
 
   await app.listen(port);
 

@@ -6,6 +6,7 @@ import { CreateTeamUseCase } from '../use-cases/create-team.use-case';
 import { AddMemberUseCase } from '../use-cases/add-member.use-case';
 import { GetMyTeamUseCase } from '../use-cases/get-my-team.use-case';
 import { LeaveTeamUseCase } from '../use-cases/leave-team.use-case';
+import { SearchTeamsUseCase } from '../use-cases/search-teams.use-case';
 
 @Injectable()
 export class TeamsOrchestrator {
@@ -14,6 +15,7 @@ export class TeamsOrchestrator {
     private readonly addMemberUc: AddMemberUseCase,
     private readonly getMyTeamUc: GetMyTeamUseCase,
     private readonly leaveTeamUc: LeaveTeamUseCase,
+    private readonly searchTeamsUc: SearchTeamsUseCase,
   ) {}
 
   async createTeam(
@@ -33,5 +35,9 @@ export class TeamsOrchestrator {
 
   async leaveTeam(userId: string): Promise<{ message: string }> {
     return this.leaveTeamUc.execute(userId);
+  }
+
+  async searchTeams(query: string): Promise<TeamResponseDto[]> {
+    return this.searchTeamsUc.execute(query);
   }
 }

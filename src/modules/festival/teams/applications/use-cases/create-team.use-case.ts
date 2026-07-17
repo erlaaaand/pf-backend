@@ -4,6 +4,9 @@ import {
   Inject,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { MESSAGE_BROKER } from '../../../../system/queue/queue.module';
+import { AuditLogService } from '../../../../system/audit-log/audit-log.service';
 import { CreateTeamDto } from '../dto/create-team.dto';
 import { TeamResponseDto } from '../dto/team-response.dto';
 import {
@@ -23,6 +26,8 @@ export class CreateTeamUseCase {
   constructor(
     @Inject(TEAM_REPOSITORY_TOKEN) private readonly teamRepo: ITeamRepository,
     @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(MESSAGE_BROKER) private readonly messageBroker: ClientProxy,
+    private readonly auditLogService: AuditLogService,
     private readonly mapper: TeamMapper,
   ) {}
   async execute(
@@ -75,6 +80,19 @@ export class CreateTeamUseCase {
         'Terjadi kesalahan saat memuat ulang data tim.',
       );
     }
+
+    // 1. Publish Event ke RabbitMQ (Fire and Forget)
+    this.messageBroker.emit('team.created', completeTeam);
+
+    // 2. Simpan Log Audit ke MongoDB (Fire and Forget)
+    this.auditLogService.logAction({
+      action: 'TEAM_CREATED',
+      performedBy: leaderId,
+      entityType: 'Team',
+      entityId: completeTeam.id,
+      metadata: { teamName: completeTeam.name, institution: institution },
+    });
+
     return this.mapper.toResponseDto(completeTeam);
   }
 }

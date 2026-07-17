@@ -9,6 +9,7 @@ import {
   Req,
   UseGuards,
   Delete,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -108,6 +109,18 @@ export class TeamsController {
   async getMyTeam(@Req() req: RequestWithUser): Promise<TeamResponseDto> {
     const sub = req.user.sub;
     return this.orchestrator.getMyTeam(sub);
+  }
+
+  @Get('search')
+  @Roles(UserRole.ADMIN, UserRole.COMMITTEE, UserRole.PARTICIPANT)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mencari tim dengan Elasticsearch (Fuzzy Search)' })
+  @ApiOkResponse({
+    description: 'Data tim berhasil diambil dari Elasticsearch.',
+    type: [TeamResponseDto],
+  })
+  async searchTeams(@Query('q') query: string): Promise<TeamResponseDto[]> {
+    return this.orchestrator.searchTeams(query);
   }
 
   @Delete('my-team')

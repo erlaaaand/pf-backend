@@ -61,3 +61,7 @@ seed
 run-seed.ts
 test-repo.ts
 test-usecase.ts
+
+competition.json
+
+0*.md
